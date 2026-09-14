@@ -58,7 +58,7 @@ class Component extends DCLogic {
     const q=this.state.day==='auto'?'':'?previewDay='+this.state.day;
     return {isSafari:s,pickSafari:()=>this.setState({mode:'safari'}),pickHome:()=>this.setState({mode:'home'}),
       safariBg:s?'#f6f0e3':'transparent',safariColor:s?'#1c2733':'#f6f0e3',homeBg:s?'transparent':'#f6f0e3',homeColor:s?'#f6f0e3':'#1c2733',
-      days,frameRef:this.frameRef,frameSrc:'./One Bell v2.dc.html'+q+(q?'&':'?')+'safeTop=62&n='+this.state.nonce,resetClock:()=>this.resetClock()};
+      days,frameRef:this.frameRef,frameSrc:'./app.html'+q+(q?'&':'?')+'safeTop=62&n='+this.state.nonce,resetClock:()=>this.resetClock()};
   }
 }
 </script>
