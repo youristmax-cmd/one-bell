@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#2b2b2b;min-height:100vh;font-family:Archivo,system-ui,sans-serif}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;box-sizing:border-box">
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:402px">
+    <button onClick="{{ pickSafari }}" style="min-height:36px;padding:0 14px;border:2px solid #f6f0e3;font:700 12px Archivo;text-transform:uppercase;letter-spacing:.06em;background: {{ safariBg }};color: {{ safariColor }}">Safari (with bars)</button>
+    <button onClick="{{ pickHome }}" style="min-height:36px;padding:0 14px;border:2px solid #f6f0e3;font:700 12px Archivo;text-transform:uppercase;letter-spacing:.06em;background: {{ homeBg }};color: {{ homeColor }}">Home-screen app</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:402px">
+    <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+      <button onClick="{{ d.pick }}" style="min-height:36px;min-width:48px;padding:0 10px;border:2px solid #ff4a1c;font:700 12px Archivo;text-transform:uppercase;letter-spacing:.06em;background: {{ d.bg }};color: {{ d.color }}">{{ d.label }}</button>
+    </sc-for>
+    <button onClick="{{ resetClock }}" style="min-height:36px;padding:0 14px;border:2px solid #ff4a1c;font:700 12px Archivo;text-transform:uppercase;letter-spacing:.06em;background:#ff4a1c;color:#1c2733">Reset clock</button>
+  </div>
+  <div style="position:relative;width:402px;height:874px;flex-shrink:0">
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+      <div style="height:100%;display:flex;flex-direction:column">
+        <iframe ref="{{ frameRef }}" src="{{ frameSrc }}" title="One Bell on iPhone" style="flex:1;min-height:0;width:100%;border:0;display:block;background:#f6f0e3"></iframe>
+        <sc-if value="{{ isSafari }}" hint-placeholder-val="{{ true }}">
+          <div style="height:83px;flex-shrink:0;background:#f6f0e3;border-top:1px solid #ddd6c8;display:flex;flex-direction:column;gap:6px;padding:8px 16px 0">
+            <div style="height:40px;border-radius:13px;background:#e6e0d3;display:flex;align-items:center;justify-content:center;font:600 15px system-ui;color:#555">onebell.app</div>
+            <div style="display:flex;justify-content:space-around;font:400 20px/1 system-ui;color:#0a84ff;padding:0 4px"><span>‹</span><span>›</span><span>⇧</span><span>▢</span><span>⧉</span></div>
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+  </div>
+  <div style="font:400 12px Archivo;color:#bbb;font-style:italic;text-align:center;max-width:402px">iPhone 16 · 402×874 pt. Day buttons preview that weekday; Reset clock clears the running session and today's log so the Today tab returns to its pre-session state.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state={mode:'safari',day:'auto',nonce:0};
+  frameRef=el=>{this._frame=el;};
+  resetClock(){
+    try{localStorage.removeItem('onebell.timer');
+      const d=JSON.parse(localStorage.getItem('onebell.data')||'null');
+      if(d&&d.logs){const t=new Date();if(this.state.day!=='auto'){const want=['sun','mon','tue','wed','thu','fri','sat'].indexOf(this.state.day);t.setDate(t.getDate()+want-t.getDay());}
+        const iso=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+        delete d.logs[iso];localStorage.setItem('onebell.data',JSON.stringify(d));}
+    }catch(e){}
+    this.setState(s=>({nonce:s.nonce+1}));
+  }
+  renderVals(){
+    const s=this.state.mode==='safari';
+    const days=[['auto','Today'],['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']].map(([k,label])=>{const on=this.state.day===k;return{label,pick:()=>this.setState({day:k}),bg:on?'#ff4a1c':'transparent',color:on?'#1c2733':'#f6f0e3'};});
+    const q=this.state.day==='auto'?'':'?previewDay='+this.state.day;
+    return {isSafari:s,pickSafari:()=>this.setState({mode:'safari'}),pickHome:()=>this.setState({mode:'home'}),
+      safariBg:s?'#f6f0e3':'transparent',safariColor:s?'#1c2733':'#f6f0e3',homeBg:s?'transparent':'#f6f0e3',homeColor:s?'#f6f0e3':'#1c2733',
+      days,frameRef:this.frameRef,frameSrc:'./One Bell v2.dc.html'+q+(q?'&':'?')+'safeTop=62&n='+this.state.nonce,resetClock:()=>this.resetClock()};
+  }
+}
+</script>
+</body>
+</html>
