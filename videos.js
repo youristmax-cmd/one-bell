@@ -1,6 +1,6 @@
 // videos.js — ONE flat list: every movement in the plan → its form video.
 // Swap any entry's `url` + `source` later (programmatically or by hand).
-//   source: "youtube" | "instagram"
+//   source: "youtube" | "instagram" | "file" (a clip in media/, played by the app itself — starts with sound)
 //   Instagram links look like https://www.instagram.com/p/XXXX/ or https://www.instagram.com/reel/XXXX/
 // Direct links (youtube.com/watch?v=…, youtu.be/…, youtube.com/shorts/…, instagram.com/p|reel/…)
 // play INSIDE the form-cue sheet during a workout; search links can only open in a new tab.
@@ -9,7 +9,7 @@ export const VIDEOS = [
   { name: "Pullover",                   url: "https://youtube.com/shorts/jXO0pdYecmo",                                    source: "youtube" },
   { name: "Curl into halo",             url: "https://youtube.com/shorts/OZbmpAgC8Bo",                                    source: "youtube" },
   { name: "Tricep dip",                 url: "https://youtube.com/shorts/VYpt6d6Z9is",                                    source: "youtube" },
-  { name: "Throw over",                 url: "https://www.youtube.com/results?search_query=kettlebell+throw+over+form",   source: "youtube" },  // waiting on the original reel link
+  { name: "Throw over",                 url: "https://www.youtube.com/results?search_query=kettlebell+throw+over+form",   source: "youtube" },  // clip pending
   { name: "Horn curl",                  url: "https://youtube.com/shorts/-pvL3JjAbug",                                    source: "youtube" },
   // Tuesday — Back + hinge
   { name: "Bent-over row",              url: "https://youtube.com/shorts/PzvvvZmNdq0",                                    source: "youtube" },
@@ -20,7 +20,7 @@ export const VIDEOS = [
   { name: "Renegade row",               url: "https://youtube.com/shorts/6rWeJh_e2jA",                                    source: "youtube" },
   // Thursday — Chest + shoulders
   { name: "Floor press",                url: "https://youtube.com/shorts/2ieUwoU_nHA",                                    source: "youtube" },
-  { name: "Horn lift",                  url: "https://www.youtube.com/results?search_query=kettlebell+horn+lift+form",    source: "youtube" },  // waiting on the original reel link
+  { name: "Horn lift",                  url: "https://www.youtube.com/results?search_query=kettlebell+horn+lift+form",    source: "youtube" },  // clip pending
   { name: "Uppercut",                   url: "https://youtube.com/shorts/e4gAbnf69_U",                                    source: "youtube" },
   { name: "Halo",                       url: "https://youtube.com/shorts/7oPYzH80bM4",                                    source: "youtube" },
   { name: "Overhead press",             url: "https://youtube.com/shorts/uzPQm5zgPXo",                                    source: "youtube" },
