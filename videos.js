@@ -35,5 +35,5 @@ export const VIDEOS = [
   { name: "Twisted reverse lunge",      url: "https://youtube.com/shorts/8MLB3y8D_g0",                                    source: "youtube" }
 ];
 
-// Played in the warm-up block before every session.
-export const WARMUP = { name: "5 Minute Pre Workout Warm Up", url: "https://youtu.be/GQXpRWdtzRg", source: "youtube" };
+// Played in the warm-up block before every session. `start` is in seconds: 25 = the "POGO HOPS" chapter (skips the intro).
+export const WARMUP = { name: "5 Minute Pre Workout Warm Up", url: "https://youtu.be/GQXpRWdtzRg", source: "youtube", start: 25 };

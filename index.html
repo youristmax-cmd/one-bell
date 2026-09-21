@@ -32,17 +32,49 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 @keyframes ob-fadein{from{opacity:0}to{opacity:1}}
 @keyframes ob-scrub{to{opacity:.25}}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* landscape column wrappers are invisible in portrait */
+.ob-span2,.ob-span3,.ob-span4{display:contents}
 /* ---- phone on its side: layout only, so rotating mid-session keeps the clock, tallies and warm-up ticks ---- */
 @media (orientation:landscape) and (max-height:540px){
-  .ob-col{max-width:min(760px,100%)!important;padding-left:env(safe-area-inset-left)!important;padding-right:env(safe-area-inset-right)!important;padding-bottom:84px!important}
-  .ob-warmvid{width:min(100%,calc((100dvh - 110px) * 16 / 9))!important;margin-left:auto;margin-right:auto}
-  .ob-nav{left:0!important;right:0!important;transform:none!important;max-width:none!important;padding-left:max(6px,env(safe-area-inset-left))!important;padding-right:max(6px,env(safe-area-inset-right))!important}
-  .ob-nav button{min-height:44px!important;gap:2px!important}
+  :root{--ob-nav:calc(33px + max(2px, env(safe-area-inset-bottom) - 10px))}
+  .ob-col{max-width:none!important;padding-left:env(safe-area-inset-left)!important;padding-right:env(safe-area-inset-right)!important;padding-bottom:calc(var(--ob-nav) + 10px)!important}
+  /* pages: 2–3 columns, everything scaled to fit one screen */
+  .ob-screen{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);grid-template-rows:repeat(14,auto) 1fr;column-gap:26px;align-items:start;padding:10px 18px 0!important}
+  .ob-screen:has(> .ob-span3){grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,.9fr)}
+  .ob-screen:not(:has(> .ob-span2)){grid-template-columns:minmax(0,1fr)}
+  .ob-screen > :not(.ob-sess){grid-column:1;min-width:0;zoom:.8}
+  .ob-screen > .ob-span2{display:block;grid-column:2;grid-row:1 / -1}
+  .ob-screen > .ob-span3{display:block;grid-column:3;grid-row:1 / -1}
+  .ob-screen:has(> .ob-span4){grid-template-columns:repeat(4,minmax(0,1fr));column-gap:22px}
+  .ob-screen > .ob-span4{display:block;grid-column:4;grid-row:1 / -1}
+  .ob-screen > .ob-span2 > :first-child,.ob-screen > .ob-span3 > :first-child,.ob-screen > .ob-span4 > :first-child{margin-top:0!important}
+  .ob-setup > :not(.ob-sess){zoom:.72}
+  .ob-step{width:46px!important;height:46px!important}
+  .ob-stepnum{font-size:46px!important}
+  .ob-cbtn{min-height:38px!important}
+  .ob-hero{font-size:34px!important}
+  .ob-bignum{font-size:120px!important}
+  .ob-calcell{aspect-ratio:auto!important;height:38px}
+  .ob-irow{min-height:40px!important;padding:8px 0!important}
+  .ob-irow > span:nth-child(2),.ob-irow > span:nth-child(3){font-size:19px!important}
+  .ob-wrow{min-height:44px!important;padding:6px 0!important}
+  .ob-warmvid{margin-top:10px!important}
+  .ob-videos .ob-hero{font-size:28px!important}
+  .ob-videos .ob-vgroups{display:block!important;columns:3;column-gap:26px;margin-top:12px!important}
+  .ob-videos .ob-vgroups > *{margin-bottom:14px}
+  .ob-videos .ob-vgroups > * > :first-child{break-after:avoid}
+  .ob-vrow{min-height:36px!important;padding:3px 0!important;break-inside:avoid}
+  .ob-vrow > div > div:first-child{font-size:16px!important}
+  .ob-vrow a{min-height:32px!important;padding:0 10px!important}
+  /* tab bar: shorter, label tucked toward the home indicator */
+  .ob-nav{left:0!important;right:0!important;transform:none!important;max-width:none!important;padding-left:max(6px,env(safe-area-inset-left))!important;padding-right:max(6px,env(safe-area-inset-right))!important;padding-bottom:max(2px, calc(env(safe-area-inset-bottom) - 10px))!important}
+  .ob-nav button{min-height:30px!important;gap:1px!important}
+  .ob-nav button > span:last-child{height:3px!important;width:26px!important}
   /* session: clock ring on the left, everything else stacked on the right */
   .ob-sess{left:0!important;right:0!important;transform:none!important;width:auto!important;max-width:none!important;
-    bottom:calc(47px + env(safe-area-inset-bottom))!important;
-    padding:6px max(14px,env(safe-area-inset-right)) 4px max(14px,env(safe-area-inset-left))!important;
-    display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;column-gap:20px}
+    bottom:var(--ob-nav)!important;
+    padding:4px max(14px,env(safe-area-inset-right)) 4px max(10px,env(safe-area-inset-left))!important;
+    display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;column-gap:18px}
   .ob-sess>*{grid-column:2;min-width:0}
   .ob-sess>[data-ring]{grid-column:1;grid-row:1 / -1;align-self:center;padding-top:0!important}
   .ob-sess>[data-list]{overflow-y:auto!important;min-height:0}
@@ -51,7 +83,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;align-content:start;
     padding:14px max(20px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))!important}
   .ob-cue>*{grid-column:1}
-  .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 6;margin-top:0!important;align-self:start}
+  .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 8;margin-top:0!important;align-self:start}
   .ob-cue-frame{width:auto!important;height:calc(100dvh - 28px - env(safe-area-inset-bottom))!important;max-width:min(62vw,100%)!important}
   .ob-moment{justify-content:safe center!important;overflow-y:auto!important;padding-left:max(20px,env(safe-area-inset-left))!important;padding-right:max(20px,env(safe-area-inset-right))!important}
 }
@@ -63,7 +95,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 <!-- ================= HOME ================= -->
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Home" style="padding:26px 20px 0">
+<div class="ob-screen ob-home" data-screen-label="Home" style="padding:26px 20px 0">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1c2733;padding-bottom:10px">
     <div style="font:400 30px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.01em;text-shadow:2px 1.5px 0 #ff4a1c">20 minutes.<br>One bell.</div>
     <div style="font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;white-space:nowrap;flex-shrink:0;padding-bottom:3px">Day {{ dayNumber }} of block {{ blockNo }}</div>
@@ -90,13 +122,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="font:400 24px/1 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Block {{ blockNo }} <span style="font:700 13px Archivo;font-stretch:110%;letter-spacing:.02em">· days {{ blockRange }}</span></div>
     <div style="font:700 14px Archivo;white-space:nowrap;flex-shrink:0"><span style="color:#ff4a1c">{{ showedUp }}</span> crossed off</div>
   </div>
+  <div class="ob-span2">
   <div style="margin-top:12px;background:#f6f0e3;border:1.5px solid #1c2733;padding:12px;box-shadow:3px 3px 0 rgba(28,39,51,.18)">
   <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:2px solid #1c2733;border-left:2px solid #1c2733">
     <sc-for list="{{ weekdayLabels }}" as="w" hint-placeholder-count="7">
       <div style="text-align:center;font:700 12px/1 Archivo;font-stretch:110%;padding:7px 0;border-right:2px solid #1c2733;border-bottom:2px solid #1c2733;background:#1c2733;color:#ece6d6">{{ w }}</div>
     </sc-for>
     <sc-for list="{{ calendar }}" as="c" hint-placeholder-count="35">
-      <div style="aspect-ratio:1;position:relative;border-right:1px solid #1c2733;border-bottom:1px solid #1c2733;background: {{ c.bg }}">
+      <div class="ob-calcell" style="aspect-ratio:1;position:relative;border-right:1px solid #1c2733;border-bottom:1px solid #1c2733;background: {{ c.bg }}">
         <span style="position:absolute;left:5px;top:4px;font:600 12px Archivo;color: {{ c.color }}">{{ c.label }}</span>
         <sc-if value="{{ c.rest }}" hint-placeholder-val="{{ false }}">
           <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:400 11px Archivo;color:rgba(28,39,51,.4);font-style:italic">rest</span>
@@ -147,6 +180,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </sc-if>
 
+  </div>
   <button onClick="{{ goToday }}" style="margin-top:26px;width:100%;min-height:66px;background:#1c2733;color:#ece6d6;border:0;font:700 20px Archivo;font-stretch:115%;letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
     <span>{{ homeCtaLabel }}</span><span style="color:#ff4a1c">{{ todayTitleShort }}</span>
   </button>
@@ -158,7 +192,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 <!-- ================= TODAY ================= -->
 <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
-<div data-screen-label="Today" style="padding:26px 20px 0">
+<div class="ob-screen ob-today" data-screen-label="Today" style="padding:26px 20px 0">
 
   <!-- ---- paper header (idle / logged / rest / recovery) ---- -->
   <sc-if value="{{ showPaperHeader }}" hint-placeholder-val="{{ true }}">
@@ -168,7 +202,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="display:flex;justify-content:space-between;align-items:baseline;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase">
       <span>{{ todayDateLabel }}</span><span style="color:#ff4a1c">{{ bellLabel }}</span>
     </div>
-    <div style="margin-top:8px;font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c;text-wrap:balance">{{ todayTitle }}</div>
+    <div class="ob-hero" style="margin-top:8px;font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c;text-wrap:balance">{{ todayTitle }}</div>
     <div style="margin-top:8px;font:400 17px Archivo;font-style:italic">{{ todaySub }}</div>
   </sc-if>
 
@@ -205,6 +239,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         <button onClick="{{ a.pick }}" style="min-height:48px;padding:0 16px;font:600 16px Archivo;border:2px solid #1c2733;background: {{ a.bg }};color: {{ a.color }}">{{ a.label }}</button>
       </sc-for>
     </div>
+    <div class="ob-span2">
     <div style="margin-top:22px;font:700 15px Archivo;font-stretch:110%;text-transform:uppercase">Minutes</div>
     <div style="margin-top:10px;display:flex;align-items:center;gap:12px">
       <button onClick="{{ minutesDown }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">−</button>
@@ -212,6 +247,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <button onClick="{{ minutesUp }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">+</button>
     </div>
     <button onClick="{{ saveRecovery }}" style="margin-top:26px;width:100%;min-height:66px;background:#1c2733;color:#ece6d6;border:0;font:700 20px Archivo;font-stretch:115%;text-transform:uppercase;letter-spacing:.02em">{{ crossLabel }}</button>
+    </div>
   </sc-if>
 
   <!-- ---- AMRAP: movement list + warm-up (idle) ---- -->
@@ -222,7 +258,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
     <div style="display:flex;flex-direction:column">
       <sc-for list="{{ moves }}" as="m" hint-placeholder-count="5">
-        <button onClick="{{ m.open }}" style="display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #1c2733;padding:14px 0;color:#1c2733;min-height:58px">
+        <button class="ob-irow" onClick="{{ m.open }}" style="display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #1c2733;padding:14px 0;color:#1c2733;min-height:58px">
           <span style="font:400 13px Archivo;color:rgba(28,39,51,.6);width:22px;flex-shrink:0">{{ m.num }}</span>
           <span style="flex:1;min-width:0;font:700 22px/1.1 Archivo;font-stretch:105%;text-transform:uppercase;letter-spacing:-.01em">{{ m.name }}</span>
           <span style="font:400 22px/1 'Archivo Black',Archivo,sans-serif;color:#ff4a1c;text-align:right;white-space:nowrap">{{ m.reps }}</span>
@@ -230,6 +266,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       </sc-for>
     </div>
     <div style="margin-top:8px;font:400 13px Archivo;font-style:italic;color:rgba(28,39,51,.7)">Tap a movement for form cues. Work the list in order, then start it again.</div>
+  </sc-if>
+  <sc-if value="{{ showIdle }}" hint-placeholder-val="{{ true }}"><div class="ob-span2">
     <sc-if value="{{ hasDayNote }}" hint-placeholder-val="{{ true }}">
       <div style="margin-top:20px;font:400 16px/1.45 Archivo;text-wrap:pretty;padding-left:14px;border-left:3px solid #ff4a1c">{{ dayNote }}</div>
     </sc-if>
@@ -240,11 +278,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
     <sc-if value="{{ hasWarmVideo }}" hint-placeholder-val="{{ true }}">
       <div class="ob-warmvid" style="margin-top:14px;width:100%;aspect-ratio:16/9;background:#1c2733;border:2px solid #1c2733;overflow:hidden">{{ warmPlayer }}</div>
-      <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Five minutes, every session. Press play, follow along, then cross it off below.</div>
+      <sc-if value="{{ warmMuted }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:8px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">Playing muted — tap the video's speaker for sound</div>
+      </sc-if>
+      <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Starts at Pogo Hops. Follow along — it crosses itself off when it ends.</div>
+      <a href="{{ warmOpenUrl }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#1c2733">Open in the YouTube app →</a>
     </sc-if>
+  </div></sc-if>
+  <sc-if value="{{ showIdle }}" hint-placeholder-val="{{ true }}"><div class="ob-span3">
     <div style="display:flex;flex-direction:column">
       <sc-for list="{{ warmItems }}" as="w" hint-placeholder-count="3">
-        <button onClick="{{ w.toggle }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:58px;padding:10px 0;background:transparent;border:0;border-bottom:1px solid #1c2733;color:#1c2733">
+        <button class="ob-wrow" onClick="{{ w.toggle }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:58px;padding:10px 0;background:transparent;border:0;border-bottom:1px solid #1c2733;color:#1c2733">
           <span style="width:30px;height:30px;position:relative;flex-shrink:0;border:2px solid #1c2733;background: {{ w.boxBg }}">
             <sc-if value="{{ w.on }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute;left:-4px;top:50%;width:34px;height:4px;border-radius:2px;background:#ff4a1c;transform:translateY(-50%) rotate(40deg)"></span>
@@ -257,6 +301,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
     <button onClick="{{ startTimer }}" disabled="{{ startDisabled }}" style="margin-top:22px;width:100%;min-height:72px;border:3px solid #1c2733;font:700 22px Archivo;font-stretch:115%;letter-spacing:.02em;text-transform:uppercase;background: {{ startBg }};color: {{ startColor }}">{{ startLabel }}</button>
     <div style="margin-top:10px;text-align:center;font:400 14px Archivo;font-style:italic">When your form breaks, the round is over.</div>
+  </div>
   </sc-if>
 
   <!-- ---- countdown 3-2-1 ---- -->
@@ -349,10 +394,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="margin-top:22px">
       <div style="font:400 28px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;color:#ff4a1c;border-bottom:3px solid #1c2733;padding-bottom:8px">Time.</div>
       <div style="display:flex;align-items:baseline;gap:18px;margin-top:6px">
-        <div style="font:400 180px/.9 'Archivo Black',Archivo,sans-serif;letter-spacing:-.06em;margin-left:-8px;text-shadow:4px 3px 0 #ff4a1c">{{ rounds }}</div>
+        <div class="ob-bignum" style="font:400 180px/.9 'Archivo Black',Archivo,sans-serif;letter-spacing:-.06em;margin-left:-8px;text-shadow:4px 3px 0 #ff4a1c">{{ rounds }}</div>
         <div style="font:700 22px/1.1 Archivo;font-stretch:110%;text-transform:uppercase;padding-bottom:22px">{{ roundsWord }}<br>in twenty</div>
       </div>
       <div style="margin-top:6px;font:400 16px/1.45 Archivo;font-style:italic;text-wrap:pretty">Two rounds is a workout. Six rounds is a workout. Walk it off for a minute, then stretch whatever's loudest.</div>
+    </div>
+    <div class="ob-span2">
       <div style="margin-top:26px;background:#f6f0e3;border:1.5px solid #1c2733;padding:12px;box-shadow:3px 3px 0 rgba(28,39,51,.18);padding:14px 16px 18px">
         <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;border-bottom:3px solid #1c2733;padding-bottom:6px">Log it</div>
         <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -382,8 +429,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 <!-- ================= PROGRESS ================= -->
 <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Progress" style="padding:26px 20px 0">
-  <div style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Track rounds</div>
+<div class="ob-screen ob-rounds" data-screen-label="Progress" style="padding:26px 20px 0">
+  <div class="ob-hero" style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Track rounds</div>
   <div style="margin-top:10px;font:400 17px/1.4 Archivo;font-style:italic;text-wrap:pretty">Same twenty minutes, same bell, more rounds. You'll see it in the numbers before the mirror.</div>
 
   <div style="margin-top:22px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:2px solid #1c2733">
@@ -399,6 +446,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </sc-if>
 
+  <div class="ob-span2">
   <div style="margin-top:26px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
     <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;text-wrap:balance">{{ chartDayLong }} · {{ chartTitle }}</div>
     <div style="font:600 14px Archivo;white-space:nowrap;flex-shrink:0">{{ chartCount }}</div>
@@ -427,15 +475,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid #1c2733"><span style="font:600 16px Archivo">Total rounds</span><span style="font:400 28px/1 'Archivo Black',Archivo,sans-serif">{{ statTotal }}</span></div>
   </div>
   <div style="margin-top:14px;font:400 14px/1.4 Archivo;font-style:italic;opacity:.75">When rounds stop climbing, go up a bell. Not before.</div>
+  </div>
 </div>
 </sc-if>
 
 <!-- ================= VIDEOS ================= -->
 <sc-if value="{{ isVideos }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Videos" style="padding:26px 20px 0">
-  <div style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Watch the form</div>
+<div class="ob-screen ob-videos" data-screen-label="Videos" style="padding:26px 20px 0">
+  <div class="ob-hero" style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Watch the form</div>
   <div style="margin-top:10px;font:400 17px/1.4 Archivo;font-style:italic">Every movement in the plan. Check it before you load it.</div>
-  <div style="margin-top:24px;display:flex;flex-direction:column;gap:28px">
+  <div class="ob-vgroups" style="margin-top:24px;display:flex;flex-direction:column;gap:28px">
     <sc-for list="{{ videoGroups }}" as="g" hint-placeholder-count="5">
       <div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
@@ -444,7 +493,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         </div>
         <div style="display:flex;flex-direction:column">
           <sc-for list="{{ g.items }}" as="v" hint-placeholder-count="5">
-            <div style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 0;border-bottom:1px solid #1c2733">
+            <div class="ob-vrow" style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 0;border-bottom:1px solid #1c2733">
               <div style="flex:1;min-width:0">
                 <div style="font:700 20px/1.1 Archivo;font-stretch:105%;text-transform:uppercase">{{ v.name }}</div>
                 <div style="font:400 14px Archivo;color:#ff4a1c;margin-top:2px">{{ v.reps }}</div>
@@ -463,8 +512,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 <!-- ================= STATS ================= -->
 <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Stats" style="padding:26px 20px 0">
-  <div style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Records</div>
+<div class="ob-screen ob-stats" data-screen-label="Stats" style="padding:26px 20px 0">
+  <div class="ob-hero" style="font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Records</div>
   <div style="margin-top:10px;font:400 17px/1.4 Archivo;font-style:italic">Lifetime totals, worked out from every session you've crossed off.</div>
 
   <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
@@ -502,6 +551,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </sc-for>
   </div>
 
+  <div class="ob-span2">
   <div style="margin-top:32px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 22px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Showing up</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #1c2733">
     <div style="padding:14px 8px 12px 0;border-right:1px solid #1c2733"><div style="font:400 40px/1 'Archivo Black',Archivo,sans-serif;letter-spacing:-.03em">{{ stSessions }}</div><div style="margin-top:4px;font:700 12px Archivo;font-stretch:110%;text-transform:uppercase">Sessions</div></div>
@@ -529,6 +579,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </sc-for>
   </div>
 
+  </div>
+  <div class="ob-span3">
   <div style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
     <div style="font:400 22px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Burn</div>
     <div style="font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">estimated</div>
@@ -574,23 +626,24 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <sc-if value="{{ scEmpty }}" hint-placeholder-val="{{ true }}">
     <button onClick="{{ goSettings }}" style="margin-top:14px;width:100%;text-align:left;background:transparent;border:2px dashed #1c2733;padding:16px;color:#1c2733;font:400 17px Archivo;font-style:italic">Log a weigh-in in Setup and the trend draws here. <span style="color:#ff4a1c;font-style:normal;font-weight:700">→</span></button>
   </sc-if>
+  </div>
 </div>
 </sc-if>
 
 <!-- ================= SETTINGS ================= -->
 <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Settings" style="padding:26px 20px 0">
+<div class="ob-screen ob-setup" data-screen-label="Settings" style="padding:26px 20px 0">
   <button onClick="{{ goHome }}" style="background:transparent;border:0;padding:0;color:#1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;display:flex;align-items:center;gap:6px">← Home</button>
-  <div style="margin-top:10px;font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Setup</div>
+  <div class="ob-hero" style="margin-top:10px;font:400 50px/.95 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.015em;text-shadow:2.5px 2px 0 #ff4a1c">Setup</div>
 
   <div style="margin-top:26px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
     <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Weigh-ins</div>
     <div style="font:700 13px Archivo;font-stretch:110%;text-transform:uppercase">{{ wiCountLabel }}</div>
   </div>
   <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-    <button onClick="{{ bwDown }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">−</button>
-    <div style="flex:1;text-align:center;font:400 64px/1 'Archivo Black',Archivo,sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ bwDisplay }}<span style="font:700 18px Archivo;margin-left:6px;letter-spacing:0">lb</span></div>
-    <button onClick="{{ bwUp }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">+</button>
+    <button class="ob-step" onClick="{{ bwDown }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">−</button>
+    <div class="ob-stepnum" style="flex:1;text-align:center;font:400 64px/1 'Archivo Black',Archivo,sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ bwDisplay }}<span style="font:700 18px Archivo;margin-left:6px;letter-spacing:0">lb</span></div>
+    <button class="ob-step" onClick="{{ bwUp }}" style="width:64px;height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 28px 'Archivo Black',Archivo,sans-serif">+</button>
   </div>
   <button onClick="{{ logWeighIn }}" style="margin-top:12px;width:100%;min-height:54px;background:#1c2733;color:#ece6d6;border:0;font:700 16px Archivo;font-stretch:115%;text-transform:uppercase;letter-spacing:.02em">{{ wiSaveLabel }}</button>
   <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.75">Date stamps itself. The latest entry drives the estimated burn on Stats.</div>
@@ -617,10 +670,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </div>
 
+  <div class="ob-span2">
   <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Days a week</div>
   <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;border:2px solid #1c2733">
-    <button onClick="{{ setMode5 }}" style="min-height:80px;text-align:left;padding:12px 14px;border:0;border-right:2px solid #1c2733;background: {{ mode5Bg }};color: {{ mode5Color }}"><div style="font:400 26px 'Archivo Black',Archivo,sans-serif">5 days</div><div style="font:400 13px Archivo;opacity:.8;margin-top:3px">Mon Tue Thu Fri Sat · Wed moves</div></button>
-    <button onClick="{{ setMode3 }}" style="min-height:80px;text-align:left;padding:12px 14px;border:0;background: {{ mode3Bg }};color: {{ mode3Color }}"><div style="font:400 26px 'Archivo Black',Archivo,sans-serif">3 days</div><div style="font:400 13px Archivo;opacity:.8;margin-top:3px">Mon arms · Wed chest · Fri legs+hinge</div></button>
+    <button class="ob-cbtn" onClick="{{ setMode5 }}" style="min-height:80px;text-align:left;padding:12px 14px;border:0;border-right:2px solid #1c2733;background: {{ mode5Bg }};color: {{ mode5Color }}"><div style="font:400 26px 'Archivo Black',Archivo,sans-serif">5 days</div><div style="font:400 13px Archivo;opacity:.8;margin-top:3px">Mon Tue Thu Fri Sat · Wed moves</div></button>
+    <button class="ob-cbtn" onClick="{{ setMode3 }}" style="min-height:80px;text-align:left;padding:12px 14px;border:0;background: {{ mode3Bg }};color: {{ mode3Color }}"><div style="font:400 26px 'Archivo Black',Archivo,sans-serif">3 days</div><div style="font:400 13px Archivo;opacity:.8;margin-top:3px">Mon arms · Wed chest · Fri legs+hinge</div></button>
   </div>
   <div style="margin-top:10px;font:400 14px/1.4 Archivo;font-style:italic;opacity:.75">Three days a week forever beats five days a week for a month.</div>
 
@@ -641,9 +695,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
   <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Current bell</div>
   <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-    <button onClick="{{ bellDown }}" style="width:72px;height:72px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 30px 'Archivo Black',Archivo,sans-serif">−</button>
-    <div style="flex:1;text-align:center;font:400 80px/1 'Archivo Black',Archivo,sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ bell }}<span style="font:700 18px Archivo;margin-left:6px;letter-spacing:0">lb</span></div>
-    <button onClick="{{ bellUp }}" style="width:72px;height:72px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 30px 'Archivo Black',Archivo,sans-serif">+</button>
+    <button class="ob-step" onClick="{{ bellDown }}" style="width:72px;height:72px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 30px 'Archivo Black',Archivo,sans-serif">−</button>
+    <div class="ob-stepnum" style="flex:1;text-align:center;font:400 80px/1 'Archivo Black',Archivo,sans-serif;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ bell }}<span style="font:700 18px Archivo;margin-left:6px;letter-spacing:0">lb</span></div>
+    <button class="ob-step" onClick="{{ bellUp }}" style="width:72px;height:72px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 30px 'Archivo Black',Archivo,sans-serif">+</button>
   </div>
   <div style="margin-top:10px;font:400 14px/1.4 Archivo;font-style:italic;opacity:.75;text-wrap:pretty">Press it overhead 5 clean? Row it 10 and feel nothing? Land between those. Size for the press.</div>
 
@@ -651,15 +705,19 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Program start</div>
   <div style="margin-top:10px;font:400 15px Archivo">Day 1 was {{ startDateLabel }} · block {{ blockNo }} now</div>
   <button onClick="{{ restartCalendar }}" style="margin-top:12px;width:100%;min-height:52px;background:transparent;color:#1c2733;border:2px solid #1c2733;font:600 15px Archivo">Restart the block count today</button>
+  </div>
+  <div class="ob-span3">
   <div style="margin-top:30px;font:400 13px/1.5 Archivo;opacity:.7;text-wrap:pretty">Plan: "20 Minutes. One Bell." by Garrett Merrill (@garrettmerrill_). Not medical advice — talk to your doctor if you've got something going on.</div>
   <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Preview the moments</div>
   <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
     <sc-for list="{{ previews }}" as="p" hint-placeholder-count="9">
-      <button onClick="{{ p.fire }}" style="min-height:48px;padding:0 8px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:700 12px Archivo;font-stretch:110%;text-transform:uppercase;line-height:1.15">{{ p.label }}</button>
+      <button class="ob-cbtn" onClick="{{ p.fire }}" style="min-height:48px;padding:0 8px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:700 12px Archivo;font-stretch:110%;text-transform:uppercase;line-height:1.15">{{ p.label }}</button>
     </sc-for>
   </div>
   <div style="margin-top:10px;font:400 13px/1.5 Archivo;font-style:italic;opacity:.85">Each fires the real animation. Tap anywhere to dismiss. Testing: triple-tap the clock during a session to jump to 1:05 remaining.</div>
 
+  </div>
+  <div class="ob-span4">
   <div style="margin-top:40px;border-top:6px double #1c2733;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline">
     <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;color:#ff4a1c">Testing</div>
     <div style="font:700 12px Archivo;font-stretch:110%;text-transform:uppercase">hold 2 s to arm</div>
@@ -667,18 +725,18 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   <div style="margin-top:14px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em">Preview a day</div>
   <div style="margin-top:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
     <sc-for list="{{ previewDays }}" as="d" hint-placeholder-count="8">
-      <button onClick="{{ d.pick }}" style="min-height:44px;padding:0 6px;border:2px solid #1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;background: {{ d.bg }};color: {{ d.color }}">{{ d.label }}</button>
+      <button class="ob-cbtn" onClick="{{ d.pick }}" style="min-height:44px;padding:0 6px;border:2px solid #1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;background: {{ d.bg }};color: {{ d.color }}">{{ d.label }}</button>
     </sc-for>
   </div>
   <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.85">Shows that weekday's plan on the Today tab. Nothing saves while previewing — logs always go to the real date.</div>
   <button onClick="{{ resetClock }}" style="margin-top:12px;width:100%;min-height:52px;background:#ff4a1c;color:#1c2733;border:0;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em">Reset clock</button>
   <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.85">Stops any running session and puts the clock back at 20:00. Logged sessions are kept.</div>
   <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <button onPointerDown="{{ holdStartToday }}" onPointerUp="{{ holdCancel }}" onPointerLeave="{{ holdCancel }}" onPointerCancel="{{ holdCancel }}" onContextMenu="{{ noMenu }}" style="position:relative;overflow:hidden;min-height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none">
+    <button class="ob-cbtn" onPointerDown="{{ holdStartToday }}" onPointerUp="{{ holdCancel }}" onPointerLeave="{{ holdCancel }}" onPointerCancel="{{ holdCancel }}" onContextMenu="{{ noMenu }}" style="position:relative;overflow:hidden;min-height:64px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none">
       <sc-if value="{{ holdingToday }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;top:0;bottom:0;background:#1c2733;animation:ob-hold 2s linear both;mix-blend-mode:normal"></span></sc-if>
       <span style="position:relative;mix-blend-mode:difference;color:#ece6d6;filter:invert(1)">Reset today</span>
     </button>
-    <button onPointerDown="{{ holdStartFresh }}" onPointerUp="{{ holdCancel }}" onPointerLeave="{{ holdCancel }}" onPointerCancel="{{ holdCancel }}" onContextMenu="{{ noMenu }}" style="position:relative;overflow:hidden;min-height:64px;background:transparent;border:2px solid #ff4a1c;color:#ff4a1c;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none">
+    <button class="ob-cbtn" onPointerDown="{{ holdStartFresh }}" onPointerUp="{{ holdCancel }}" onPointerLeave="{{ holdCancel }}" onPointerCancel="{{ holdCancel }}" onContextMenu="{{ noMenu }}" style="position:relative;overflow:hidden;min-height:64px;background:transparent;border:2px solid #ff4a1c;color:#ff4a1c;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none">
       <sc-if value="{{ holdingFresh }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;top:0;bottom:0;background:#ff4a1c;animation:ob-hold 2s linear both"></span></sc-if>
       <span style="position:relative;mix-blend-mode:difference;color:#ece6d6;filter:invert(1)">Start fresh</span>
     </button>
@@ -698,6 +756,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="margin-top:10px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">{{ testNote }}</div>
   </sc-if>
   <div style="margin-top:10px;font:400 13px/1.5 Archivo;font-style:italic;opacity:.85">Reset today clears today's log and puts the clock back at 20:00. Start fresh wipes all workout data for launching the program for real. Neither is reachable from the session screen.</div>
+  </div>
 </div>
 </sc-if>
 
@@ -712,8 +771,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div style="margin-top:14px;font:400 20px/1.4 Archivo;text-wrap:pretty">{{ cueText }}</div>
     <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ false }}">
       <div class="ob-cue-player" style="margin-top:16px;display:flex;justify-content:center"><div class="ob-cue-frame" style="overflow:hidden;background:#1c2733;border:2px solid #1c2733;max-width:100%;aspect-ratio: {{ cueAR }};width: {{ cueW }};height: {{ cueH }}">
-        <iframe src="{{ cueEmbed }}" title="{{ cueName }} form video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen="true" style="width:100%;height:100%;border:0;display:block"></iframe>
+        {{ cuePlayer }}
       </div></div>
+    </sc-if>
+    <sc-if value="{{ cueMuted }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:8px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">Playing muted — tap the video's speaker for sound</div>
     </sc-if>
     <sc-if value="{{ showNoEmbed }}" hint-placeholder-val="{{ false }}">
       <div style="margin-top:16px;padding:14px 16px;border:2px dashed #1c2733;font:400 15px/1.4 Archivo;text-wrap:pretty">
@@ -961,6 +1023,83 @@ class Component extends DCLogic {
         ?React.createElement('span',{key:'c'+i,style:{font:"400 "+fs+"/1 'Archivo Black',Archivo,sans-serif",color:ink,textShadow:misreg+'px '+(misreg*.7).toFixed(2)+'px 0 '+shadow,padding:'0 1px',transform:'translateY(-6%)',fontSize:'calc('+D+' * .15)'}},':')
         :React.createElement(Component.Flap,{key:'d'+i,value:c,ink,shadow,misreg,w,h,fs})));
   }
+  // ---------- YouTube players (IFrame API) ----------
+  // Autoplay on the tap that opened them. Where the browser won't start sound without a tap inside the
+  // player (iPhone), fall back to muted playback and say so; one tap on the player's speaker unmutes.
+  ytApi(){
+    if(window.YT&&window.YT.Player)return Promise.resolve(window.YT);
+    if(!Component._ytP)Component._ytP=new Promise(res=>{
+      const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{if(prev)prev();res(window.YT);};
+      const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;document.head.appendChild(s);
+    });
+    return Component._ytP;
+  }
+  ytId(url){const m=(url||'').match(/(?:shorts\/|youtu\.be\/|[?&]v=|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:null;}
+  // host is a React-rendered div with no React children; the player lives in a child we create, so React never sees it
+  mountYT(host,{id,start,autoplay,which,onEnd}){
+    const inner=document.createElement('div');host.appendChild(inner);host._yt={dead:false};
+    this.ytApi().then(YT=>{
+      if(!host._yt||host._yt.dead)return;
+      const p=new YT.Player(inner,{width:'100%',height:'100%',videoId:id,
+        playerVars:{playsinline:1,rel:0,modestbranding:1,start:start||0},
+        events:{
+          onReady:()=>{if(autoplay||(which==='warm'&&this._autoWarm)){if(which==='warm')this._autoWarm=false;this.ytPlay(p,which);}},
+          onStateChange:e=>{
+            if(e.data===YT.PlayerState.ENDED&&onEnd)onEnd();
+            if(e.data===YT.PlayerState.PLAYING&&this.state.ytMuted===which&&!p.isMuted())this.setState({ytMuted:null});
+          }}});
+      host._yt.p=p;
+    });
+  }
+  ytPlay(p,which){
+    try{p.unMute();p.playVideo();}catch(e){return;}
+    clearTimeout(this['_ytChk'+which]);
+    this['_ytChk'+which]=setTimeout(()=>{try{const st=p.getPlayerState();if(st!==1&&st!==3){p.mute();p.playVideo();this.setState({ytMuted:which});}}catch(e){}},1500);
+  }
+  unmountYT(host){if(host&&host._yt){host._yt.dead=true;try{if(host._yt.p)host._yt.p.destroy();}catch(e){}host._yt=null;}}
+  warmRef=el=>{
+    if(el===this._warmHost)return;this.unmountYT(this._warmHost);this._warmHost=el;if(!el)return;
+    const w=this.state.warmup,id=w&&this.ytId(w.url);if(!id)return;
+    const auto=!!this._autoWarm;this._autoWarm=false;
+    this.mountYT(el,{id,start:w.start||0,autoplay:auto,which:'warm',onEnd:()=>{const a=[...this.state.warm];a[0]=true;this.setState({warm:a});this.buzz(30);}});
+  };
+  cueRef=el=>{
+    if(el===this._cueHost)return;this.unmountYT(this._cueHost);this._cueHost=el;if(!el)return;
+    const url=el.getAttribute('data-url'),id=this.ytId(url);
+    if(id){this.mountYT(el,{id,autoplay:true,which:'cue'});return;}
+    const emb=this.embedUrl(url);if(!emb)return;   // Instagram: plain embed
+    const f=document.createElement('iframe');f.src=emb;f.allow='autoplay; encrypted-media; picture-in-picture';f.allowFullscreen=true;f.style.cssText='width:100%;height:100%;border:0;display:block';el.appendChild(f);
+  };
+  // the workout was pressed (Start today / Today tab): play the warm-up if it isn't crossed off yet
+  armWarm(){
+    if(this.state.warm[0])return;
+    const h=this._warmHost;
+    if(h&&h._yt&&h._yt.p&&h._yt.p.playVideo)this.ytPlay(h._yt.p,'warm');else this._autoWarm=true;
+  }
+
+  // ---------- boxing-ring bell ----------
+  // Struck brass: inharmonic partials (slightly detuned pairs for the shimmer), a hammer click, long ring-out.
+  // n strikes, gap seconds apart — 3 fast for the start and end of the session, 1 per round.
+  audio(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;this._ac=this._ac||new C();if(this._ac.state==='suspended')this._ac.resume();return this._ac;}catch(e){return null;}}
+  bell(n=1,gap=.2){
+    const ac=this.audio();if(!ac)return;
+    const t0=ac.currentTime+.02,f0=760;
+    const out=ac.createGain();out.gain.value=.45;const comp=ac.createDynamicsCompressor();out.connect(comp);comp.connect(ac.destination);
+    const P=[[1,1,2.6],[2.02,.55,1.7],[2.74,.5,1.4],[4.07,.3,.9],[5.43,.2,.6],[6.8,.12,.4]];   // [ratio, level, ring seconds]
+    for(let k=0;k<n;k++){
+      const t=t0+k*gap;
+      for(const [r,a,d] of P)for(const det of [1,1.0045]){
+        const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f0*r*det;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*.5,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+        o.connect(g);g.connect(out);o.start(t);o.stop(t+d+.05);
+      }
+      const len=Math.floor(ac.sampleRate*.03),buf=ac.createBuffer(1,len,ac.sampleRate),ch=buf.getChannelData(0);
+      for(let i=0;i<len;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+      const src=ac.createBufferSource(),bp=ac.createBiquadFilter(),ng=ac.createGain();
+      src.buffer=buf;bp.type='bandpass';bp.frequency.value=3200;bp.Q.value=.8;ng.gain.value=.35;
+      src.connect(bp);bp.connect(ng);ng.connect(out);src.start(t);
+    }
+  }
   embedUrl(url){
     let m;
     if((m=url.match(/instagram\.com\/(p|reel|reels)\/([A-Za-z0-9_-]+)/)))return 'https://www.instagram.com/'+(m[1]==='reels'?'reel':m[1])+'/'+m[2]+'/embed';
@@ -990,7 +1129,7 @@ class Component extends DCLogic {
     const cs=getComputedStyle(el);const inner=el.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
     // landscape: the ring has its own column, so it sizes to the height; the right column scales with it
     if(getComputedStyle(el).display==='grid'){
-      const sideCtl=54,maxW=(el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight))*.46-sideCtl;
+      const sideCtl=54,maxW=(el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight))*.52-sideCtl;
       const ring=Math.round(Math.max(120,Math.min(inner-4,maxW)));
       const k=Math.max(.8,Math.min(1.3,inner/330));
       this._ringLock=null;
@@ -1014,7 +1153,7 @@ class Component extends DCLogic {
     if(this._ringLock===key&&spare<=8)return;this._ringLock=key;
     const st={};if(Math.abs(ring-(this.state.ringPx||0))>1)st.ringPx=ring;if(Math.abs(k-(this.state.uiK||1))>.02)st.uiK=k;if(Object.keys(st).length)this.setState(st);
   }
-  componentWillUnmount(){clearInterval(this._iv);this.stopVoice();if(this._ro)this._ro.disconnect();this.releaseScreen();document.removeEventListener('visibilitychange',this._vis);}
+  componentWillUnmount(){this.unmountYT(this._warmHost);this.unmountYT(this._cueHost);clearInterval(this._iv);this.stopVoice();if(this._ro)this._ro.disconnect();this.releaseScreen();document.removeEventListener('visibilitychange',this._vis);}
 
   // ---------- voice: counts ROUNDS only, keyword "round" required ----------
   voiceSupported(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition);}
@@ -1052,8 +1191,8 @@ class Component extends DCLogic {
   }
   numberWord(n){const o=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],T=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];if(n<20)return o[n];if(n<100)return T[Math.floor(n/10)]+(n%10?'-'+o[n%10]:'');return String(n);}
   speakCount(n){
-    this.beep(1320,.09,'sine');
-    setTimeout(()=>{try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(this.numberWord(n));u.rate=1.05;u.lang='en-US';speechSynthesis.speak(u);}catch(e){}},140);
+    this.bell(1);
+    setTimeout(()=>{try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(this.numberWord(n));u.rate=1.05;u.lang='en-US';speechSynthesis.speak(u);}catch(e){}},450);
   }
   syncVoice(){
     const want=this.voiceWanted();
@@ -1201,11 +1340,11 @@ class Component extends DCLogic {
   tick(){
     const t=this.state.timer;const now=Date.now();
     if(t.status==='countdown'&&now>=t.endAt){
-      this.beep(880,.25);this.buzz(100);
+      this.bell(3);this.buzz(100);
       this.setTimer({...t,status:'running',endAt:now+this.minutes()*60000,startedAt:now,rounds:0,splits:[]});return;
     }
     if(t.status==='running'&&now>=t.endAt){
-      this.beep(660,.5,'sawtooth');this.buzz([200,100,200,100,400]);
+      this.bell(3);this.buzz([200,100,200,100,400]);
       const rounds=t.rounds,data=this.state.data;
       this.setTimer({...t,status:'done'});
       this.setState({form:{...this.state.form,rounds,bell:data.bell}});
@@ -1228,7 +1367,7 @@ class Component extends DCLogic {
     // a preview never shows, edits, or overwrites the real day's log
     const todayLog=previewing?null:allLogs[todayIso];
     const t=S.timer, tab=S.tab;
-    const go=k=>()=>this.setState({tab:k,cue:null,player:false});
+    const go=k=>()=>{if(k==='today')this.armWarm();this.setState({tab:k,cue:null,player:false});};
     const v={};
 
     v.pageBg=PAPER;v.pageInk=INK;
@@ -1343,7 +1482,7 @@ class Component extends DCLogic {
     v.showPaperHeader=!(v.showRunning||v.showCountdown);
     const moves=sched.moves||[];
     v.moves=moves.map((m,i)=>({num:String(i+1).padStart(2,'0'),name:m.name,reps:m.reps,cue:m.cue,expanded:S.expandedMove===i,badge:this.badge(this.videoFor(m.name).source).badge,
-      open:()=>this.setState({cue:i,player:false}),
+      open:()=>this.setState({cue:i,player:!!this.embedUrl(this.videoFor(m.name).url)}),
       toggle:()=>this.setState({expandedMove:S.expandedMove===i?null:i}),
       watch:()=>this.setState({cue:i,player:true})}));
     v.hasDayNote=!!sched.note;v.dayNote=sched.note||'';
@@ -1352,11 +1491,13 @@ class Component extends DCLogic {
     const warmEmb=S.warmup?this.embedUrl(S.warmup.url):null;
     // built here rather than as template markup so the browser never requests a literal "{{ … }}" src before hydration
     v.hasWarmVideo=!!warmEmb;
-    v.warmPlayer=warmEmb?React.createElement('iframe',{src:warmEmb.replace(/autoplay=1&?/,'')+'&rel=0',title:'5-minute warm-up video',allow:'autoplay; encrypted-media; picture-in-picture; fullscreen',allowFullScreen:true,style:{width:'100%',height:'100%',border:0,display:'block'}}):null;
+    v.warmPlayer=warmEmb?React.createElement('div',{key:'warm-'+S.warmup.url,ref:this.warmRef,className:'ob-yt',style:{width:'100%',height:'100%'}}):null;
+    v.warmMuted=S.ytMuted==='warm';
+    const wid=S.warmup?this.ytId(S.warmup.url):null;v.warmOpenUrl=wid?'https://youtu.be/'+wid+(S.warmup.start?'?t='+S.warmup.start:''):'#';
     const warmDone=S.warm.every(Boolean)&&moves.length>0;
     v.startDisabled=!warmDone;v.startBg=warmDone?INK:'transparent';v.startColor=warmDone?PAPER:'rgba(28,39,51,.4)';
     v.startLabel=moves.length===0?'Pick Friday movements in Setup':warmDone?'Start the clock · 20:00':'Warm up to unlock the clock';
-    v.startTimer=()=>{if(!warmDone)return;this.beep(520,.12);this.setTimer({status:'countdown',endAt:Date.now()+3200,rounds:0,splits:[]});this.lockScreen();if(data.voiceOn)this.startVoice();};
+    v.startTimer=()=>{if(!warmDone)return;this.audio();this.setTimer({status:'countdown',endAt:Date.now()+3200,rounds:0,splits:[]});this.lockScreen();if(data.voiceOn)this.startVoice();};
     v.countdownEl=t.status==='countdown'?this.flapClock(String(Math.max(1,Math.min(3,Math.ceil((t.endAt-S.now)/1000)))),INK,FLUO,3,'min(70vw, 44dvh)'):null;
 
     // running visuals
@@ -1410,11 +1551,11 @@ class Component extends DCLogic {
     v.tallyGroups=tallyGroups(t.rounds,S.ghost,true);
     v.paceLabel=t.rounds>0?'avg '+this.fmt(lastAt/t.rounds)+' / round':'rest when you need to';
     v.roundBtnBg=paused?'rgba(28,39,51,.12)':FLUO;v.roundBtnColor=paused?'rgba(28,39,51,.4)':INK;
-    v.addRound=()=>{if(t.status!=='running')return;const el=total-(t.endAt-Date.now());this.beep(740,.1);this.buzz([40,30,60]);this.setTimer({...t,rounds:t.rounds+1,splits:[...splits,el]});};
+    v.addRound=()=>{if(t.status!=='running')return;const el=total-(t.endAt-Date.now());this.bell(1);this.buzz([40,30,60]);this.setTimer({...t,rounds:t.rounds+1,splits:[...splits,el]});};
     v.undoRound=()=>{if(t.rounds===0)return;this.setTimer({...t,rounds:t.rounds-1,splits:splits.slice(0,-1)});clearTimeout(this._gt);this.setState({ghost:t.rounds});this._gt=setTimeout(()=>this.setState({ghost:null}),420);};
     v.togglePause=()=>{if(t.status==='running')this.setTimer({...t,status:'paused',remainingMs:t.endAt-Date.now()});else if(t.status==='paused')this.setTimer({...t,status:'running',endAt:Date.now()+t.remainingMs});};
     v.pauseLabel=t.status==='paused'?'Resume':'Pause';
-    v.endEarly=()=>{if(!confirm('Call it here? Rounds so far still count.'))return;const ran=Math.round(((total-(t.status==='paused'?t.remainingMs:(t.endAt-Date.now())))/60000)*10)/10;const vd=this.verdict(tKey,t.rounds,ran,data);this.setTimer({...t,status:'done',ranMinutes:ran});this.pushMoments([{kind:'called',rounds:t.rounds,dayKey:tKey,bell:data.bell,minutes:ran,best:vd.best,verdict:vd}]);this.setState({form:{...S.form,rounds:t.rounds,bell:data.bell}});};
+    v.endEarly=()=>{if(!confirm('Call it here? Rounds so far still count.'))return;this.bell(3);const ran=Math.round(((total-(t.status==='paused'?t.remainingMs:(t.endAt-Date.now())))/60000)*10)/10;const vd=this.verdict(tKey,t.rounds,ran,data);this.setTimer({...t,status:'done',ranMinutes:ran});this.pushMoments([{kind:'called',rounds:t.rounds,dayKey:tKey,bell:data.bell,minutes:ran,best:vd.best,verdict:vd}]);this.setState({form:{...S.form,rounds:t.rounds,bell:data.bell}});};
     v.formRounds=S.form.rounds;v.formBell=S.form.bell;
     v.formRoundsDown=()=>this.setState({form:{...S.form,rounds:Math.max(0,S.form.rounds-1)}});
     v.formRoundsUp=()=>this.setState({form:{...S.form,rounds:S.form.rounds+1}});
@@ -1460,7 +1601,8 @@ class Component extends DCLogic {
       const m=moves[S.cue],vid=this.videoFor(m.name),b=this.badge(vid.source);
       v.cueName=m.name;v.cueReps=m.reps;v.cueText=m.cue;v.cueUrl=vid.url;v.cueBadge=b.badge;
       const emb=this.embedUrl(vid.url);
-      v.cueEmbed=emb||'';v.showPlayer=S.player&&!!emb;v.showNoEmbed=S.player&&!emb;
+      v.cuePlayer=emb?React.createElement('div',{key:'cue-'+vid.url,'data-url':vid.url,ref:this.cueRef,className:'ob-yt',style:{width:'100%',height:'100%'}}):null;
+      v.cueMuted=S.ytMuted==='cue';v.showPlayer=S.player&&!!emb;v.showNoEmbed=S.player&&!emb;
       // Shorts and reels are vertical: size by height so the clip isn't letterboxed; landscape CSS overrides the height
       const vert=/\/shorts\/|instagram\.com/.test(vid.url);
       v.cueAR=vert?'9/16':'16/9';v.cueW=vert?'auto':'100%';v.cueH=vert?'min(46dvh, calc((min(100vw,430px) - 44px) * 16 / 9))':'auto';
@@ -1468,7 +1610,7 @@ class Component extends DCLogic {
       v.openPlayer=()=>this.setState({player:true});
       v.cueSourceName=vid.source==='instagram'?'Instagram':'YouTube';
     }
-    v.closeCue=()=>this.setState({cue:null,player:false});
+    v.closeCue=()=>this.setState({cue:null,player:false,ytMuted:S.ytMuted==='cue'?null:S.ytMuted});
     // voice
     v.voiceSupported=this.voiceSupported();
     const vOn=!!data.voiceOn;
