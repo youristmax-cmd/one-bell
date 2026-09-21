@@ -31,11 +31,35 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 @keyframes ob-print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes ob-fadein{from{opacity:0}to{opacity:1}}
 @keyframes ob-scrub{to{opacity:.25}}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* ---- phone on its side: layout only, so rotating mid-session keeps the clock, tallies and warm-up ticks ---- */
+@media (orientation:landscape) and (max-height:540px){
+  .ob-col{max-width:min(760px,100%)!important;padding-left:env(safe-area-inset-left)!important;padding-right:env(safe-area-inset-right)!important;padding-bottom:84px!important}
+  .ob-warmvid{width:min(100%,calc((100dvh - 110px) * 16 / 9))!important;margin-left:auto;margin-right:auto}
+  .ob-nav{left:0!important;right:0!important;transform:none!important;max-width:none!important;padding-left:max(6px,env(safe-area-inset-left))!important;padding-right:max(6px,env(safe-area-inset-right))!important}
+  .ob-nav button{min-height:44px!important;gap:2px!important}
+  /* session: clock ring on the left, everything else stacked on the right */
+  .ob-sess{left:0!important;right:0!important;transform:none!important;width:auto!important;max-width:none!important;
+    bottom:calc(47px + env(safe-area-inset-bottom))!important;
+    padding:6px max(14px,env(safe-area-inset-right)) 4px max(14px,env(safe-area-inset-left))!important;
+    display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;column-gap:20px}
+  .ob-sess>*{grid-column:2;min-width:0}
+  .ob-sess>[data-ring]{grid-column:1;grid-row:1 / -1;align-self:center;padding-top:0!important}
+  .ob-sess>[data-list]{overflow-y:auto!important;min-height:0}
+  /* form-cue sheet: full height, text left, video right */
+  .ob-cue{left:0!important;right:0!important;transform:none!important;max-width:none!important;top:0;border-top:0!important;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;align-content:start;
+    padding:14px max(20px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))!important}
+  .ob-cue>*{grid-column:1}
+  .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 6;margin-top:0!important;align-self:start}
+  .ob-cue-frame{width:auto!important;height:calc(100dvh - 28px - env(safe-area-inset-bottom))!important;max-width:min(62vw,100%)!important}
+  .ob-moment{justify-content:safe center!important;overflow-y:auto!important;padding-left:max(20px,env(safe-area-inset-left))!important;padding-right:max(20px,env(safe-area-inset-right))!important}
+}
 </style>
 </helmet>
 
 <div style="min-height:100dvh;display:flex;justify-content:center;background-color:#fbd9c4;background-image:linear-gradient(180deg,rgba(255,74,28,0) 0%,rgba(255,74,28,0) 58%,rgba(255,74,28,.35) 82%,rgba(255,74,28,.7) 93%,#ff4a1c 100%),linear-gradient(180deg,#fbf8f1 0%,#f8f2e6 55%,#fbe6d6 85%,#fbd9c4 100%);background-size:100% 100%,100% 100dvh;background-repeat:no-repeat,no-repeat;color: {{ pageInk }}">
-<div style="width:100%;max-width:430px;min-height:100dvh;position:relative;padding:env(safe-area-inset-top) 0 104px 0">
+<div class="ob-col" style="width:100%;max-width:430px;min-height:100dvh;position:relative;padding:env(safe-area-inset-top) 0 104px 0">
 
 <!-- ================= HOME ================= -->
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
@@ -214,6 +238,10 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
       <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Warm-up</div>
       <div style="font:700 14px Archivo;font-stretch:110%;text-transform:uppercase">Not on the clock</div>
     </div>
+    <sc-if value="{{ hasWarmVideo }}" hint-placeholder-val="{{ true }}">
+      <div class="ob-warmvid" style="margin-top:14px;width:100%;aspect-ratio:16/9;background:#1c2733;border:2px solid #1c2733;overflow:hidden">{{ warmPlayer }}</div>
+      <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Five minutes, every session. Press play, follow along, then cross it off below.</div>
+    </sc-if>
     <div style="display:flex;flex-direction:column">
       <sc-for list="{{ warmItems }}" as="w" hint-placeholder-count="3">
         <button onClick="{{ w.toggle }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:58px;padding:10px 0;background:transparent;border:0;border-bottom:1px solid #1c2733;color:#1c2733">
@@ -241,7 +269,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 
   <!-- ---- running / paused: one screen, no scroll ---- -->
   <sc-if value="{{ showRunning }}" hint-placeholder-val="{{ false }}">
-    <div ref="{{ sessionRef }}" style="position:fixed;left:50%;top:env(safe-area-inset-top);transform:translateX(-50%);width:100%;max-width:430px;bottom:calc(60px + env(safe-area-inset-bottom));display:flex;flex-direction:column;padding:clamp(6px,1dvh,12px) 18px clamp(4px,.8dvh,8px);overflow:hidden;background:linear-gradient(180deg,#fbf8f1 0%,#f6f0e3 62%,#fbd9c4 80%,#ffa47e 91%,#ff4a1c 100%);z-index:5">
+    <div class="ob-sess" ref="{{ sessionRef }}" style="position:fixed;left:50%;top:env(safe-area-inset-top);transform:translateX(-50%);width:100%;max-width:430px;bottom:calc(60px + env(safe-area-inset-bottom));display:flex;flex-direction:column;padding:clamp(6px,1dvh,12px) 18px clamp(4px,.8dvh,8px);overflow:hidden;background:linear-gradient(180deg,#fbf8f1 0%,#f6f0e3 62%,#fbd9c4 80%,#ffa47e 91%,#ff4a1c 100%);z-index:5">
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;font:700 12px Archivo;font-stretch:110%;text-transform:uppercase;border-bottom:2px solid #1c2733;padding-bottom:5px;flex-shrink:0">
         <span style="white-space:nowrap;color: {{ sessionDayColor }}">{{ sessionDayLabel }}</span><span style="flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ todayTitle }}</span>
         <span style="display:flex;align-items:center;gap:5px;white-space:nowrap;color: {{ micColor }}"><span style="width:8px;height:8px;border-radius:50%;background: {{ micDot }}"></span>{{ micLabel }}</span>
@@ -676,16 +704,16 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 <!-- ================= FORM CUE SHEET (printed page pulled up) ================= -->
 <sc-if value="{{ showCue }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ closeCue }}" style="position:fixed;inset:0;background:rgba(28,39,51,.55);z-index:50"></div>
-  <div style="position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;z-index:51;background:#ece6d6;color:#1c2733;border-top:4px solid #1c2733;padding:18px 20px calc(24px + env(safe-area-inset-bottom))">
+  <div class="ob-cue" style="position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;max-height:100dvh;overflow-y:auto;z-index:51;background:#ece6d6;color:#1c2733;border-top:4px solid #1c2733;padding:18px 20px calc(24px + env(safe-area-inset-bottom))">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
       <div style="font:400 32px/1 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.01em">{{ cueName }}</div>
       <div style="font:400 24px 'Archivo Black',Archivo,sans-serif;color:#ff4a1c;white-space:nowrap">{{ cueReps }}</div>
     </div>
     <div style="margin-top:14px;font:400 20px/1.4 Archivo;text-wrap:pretty">{{ cueText }}</div>
     <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:16px;overflow:hidden;background:#1c2733;border:2px solid #1c2733;aspect-ratio:16/10">
+      <div class="ob-cue-player" style="margin-top:16px;display:flex;justify-content:center"><div class="ob-cue-frame" style="overflow:hidden;background:#1c2733;border:2px solid #1c2733;max-width:100%;aspect-ratio: {{ cueAR }};width: {{ cueW }};height: {{ cueH }}">
         <iframe src="{{ cueEmbed }}" title="{{ cueName }} form video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen="true" style="width:100%;height:100%;border:0;display:block"></iframe>
-      </div>
+      </div></div>
     </sc-if>
     <sc-if value="{{ showNoEmbed }}" hint-placeholder-val="{{ false }}">
       <div style="margin-top:16px;padding:14px 16px;border:2px dashed #1c2733;font:400 15px/1.4 Archivo;text-wrap:pretty">
@@ -704,7 +732,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 
 <!-- ================= MOMENT OVERLAY ================= -->
 <sc-if value="{{ showMoment }}" hint-placeholder-val="{{ false }}">
-<div onClick="{{ dismissMoment }}" style="position:fixed;inset:0;z-index:60;background:linear-gradient(180deg,#fbf8f1 0%,#f6f0e3 62%,#fbd9c4 80%,#ffa47e 91%,#ff4a1c 100%);display:flex;flex-direction:column;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));overflow:visible">
+<div class="ob-moment" onClick="{{ dismissMoment }}" style="position:fixed;inset:0;z-index:60;background:linear-gradient(180deg,#fbf8f1 0%,#f6f0e3 62%,#fbd9c4 80%,#ffa47e 91%,#ff4a1c 100%);display:flex;flex-direction:column;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));overflow:visible">
   <div style="width:100%;max-width:390px;margin:0 auto;position:relative;display:flex;flex-direction:column;max-height:100%">
     <sc-if value="{{ mTitle }}" hint-placeholder-val="{{ false }}">
       <div style="font:400 30px/1 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.01em;text-shadow:2px 1.6px 0 #ff4a1c;animation:ob-fadein .2s ease both">{{ mTitle }}</div>
@@ -793,7 +821,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 </sc-if>
 
 <!-- ================= BOTTOM NAV ================= -->
-<nav style="position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;background:#f6f0e3;border-top:3px solid #1c2733;padding:0 6px env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(5,1fr);z-index:45">
+<nav class="ob-nav" style="position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;background:#f6f0e3;border-top:3px solid #1c2733;padding:0 6px env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(5,1fr);z-index:45">
   <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
     <button onClick="{{ t.go }}" style="min-height:58px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#1c2733;padding:0">
       <span style="font:{{ t.weight }} 12px Archivo;font-stretch:112%;text-transform:uppercase;letter-spacing:.04em;opacity: {{ t.opacity }}">{{ t.label }}</span>
@@ -831,10 +859,10 @@ class Component extends DCLogic {
     thu:{title:'Chest + shoulders',short:'Chest + shoulders',sub:'Push day two',kind:'amrap',moves:[
       {name:'Floor press',reps:'10 each arm',cue:"Elbow at 45°, triceps touch the floor, then press. Don't flare it straight out."},
       {name:'Horn lift',reps:'10',cue:'Crush the horns together the entire time. The tension is the squeeze, not the weight.'},
-      {name:'Liftoff pushup',reps:'10 each side',cue:'One hand on the bell, one on the floor. Lower under control, then lift the floor hand. Hips stay square.'},
+      {name:'Uppercut',reps:'10 each side',cue:'Stagger your feet like the start of a single-leg RDL. Drive the bell up and across like an uppercut, rotating from the hips, not the lower back. Control it down.'},
       {name:'Halo',reps:'10 alternating',cue:'Circles close to your head, alternating direction each rep. Everything below the neck stays still.'},
       {name:'Overhead press',reps:'10 each arm',cue:'Ribs down, glutes tight, press up and not forward.'}],
-      note:'The combo: horn lift straight into liftoff pushups, no rest between. Five rounds of that and you\'ll feel it for two days.'},
+      note:'The combo: horn lift straight into uppercuts, no rest between. Five rounds of that and you\'ll feel it for two days.'},
     fri:{title:'Core + conditioning',short:'Core + engine',sub:'Your engine day',kind:'amrap',moves:[
       {name:'Two-hand swing',reps:'20',cue:"Hips back, not down. It's a hinge, not a squat. The bell floats; your arms don't lift it."},
       {name:'High pull',reps:'10 each arm',cue:'A swing that stops at chest height. Elbow leads.'},
@@ -850,12 +878,12 @@ class Component extends DCLogic {
     sun:{title:'Rest',short:'Rest',sub:'Sunday',kind:'rest'}
   };
   static CATS = {
-    arms:['Pullover','Curl into halo','Tricep dip','Throw over','Horn curl','Bent-over row','Ballistic row','Shrug','Floor press','Horn lift','Liftoff pushup','Halo','Overhead press'],
+    arms:['Pullover','Curl into halo','Tricep dip','Throw over','Horn curl','Bent-over row','Ballistic row','Shrug','Floor press','Horn lift','Uppercut','Halo','Overhead press'],
     legs:['Deadlift','Goblet good morning','Two-hand swing','High pull','Squat into goblet thruster','Cossack squat','Twisted reverse lunge'],
     core:['Renegade row','Sit-up to press','Dead bug']
   };
-  static BODYWEIGHT = ['Tricep dip','Liftoff pushup','Dead bug'];
-  static TAGS = {'Squat into goblet thruster':'+arms','Renegade row':'+arms','Two-hand swing':'+core','High pull':'+arms','Sit-up to press':'+arms','Twisted reverse lunge':'+core'};
+  static BODYWEIGHT = ['Tricep dip','Dead bug'];
+  static TAGS = {'Uppercut':'+core','Squat into goblet thruster':'+arms','Renegade row':'+arms','Two-hand swing':'+core','High pull':'+arms','Sit-up to press':'+arms','Twisted reverse lunge':'+core'};
   // Verdict stamp lines — edit freely. NEW BEST is fixed and overrides every pool.
   static VERDICTS = {
     high:["BIG DAY.","THAT'S WORK.","THE BELL'S SCARED.","MORE THAN LAST TIME.","PAID IN FULL.","THE GARAGE HEARD IT."],
@@ -884,7 +912,8 @@ class Component extends DCLogic {
   ];
   static DAYS = ['sun','mon','tue','wed','thu','fri','sat'];
   static LONG = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
-  static WARM = ['30 jumping jacks','20 pushups',"Light stretching — whatever's tight"];
+  // first item is the warm-up video (videos.js → WARMUP), played in the block above the checklist
+  static WARM = ['5-min warm-up video','30 jumping jacks','20 pushups',"Light stretching — whatever's tight"];
   static ACTIVITIES = ['Walk','Sport','Bike','Swim','Hike','Yard work','Other'];
   static MISSED = [
     "Missing one day is nothing. Missing one and deciding you've blown it — that's what ends things. Today's the one that counts.",
@@ -916,7 +945,7 @@ class Component extends DCLogic {
   static INK='#1c2733'; static FLUO='#ff4a1c'; static PAPER='#ece6d6'; static SLATE='#2a3136'; static CHALK='#f2eee5'; static FLUO_CHALK='#ff5a2c';
 
   state = {
-    tab:'today', data:null, warm:[false,false,false],
+    tab:'today', data:null, warm:Component.WARM.map(()=>false),
     timer:{status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]},
     cue:null,
     form:{rounds:0,bell:30,activity:'Walk',minutes:30},
@@ -953,12 +982,21 @@ class Component extends DCLogic {
     this._iv=setInterval(()=>this.tick(),250);
     this._vis=()=>{if(document.visibilityState==='visible'&&this.sessionActive())this.lockScreen();};
     document.addEventListener('visibilitychange',this._vis);
-    import(new URL('./videos.js',location.href).href).then(m=>this.setState({videos:m.VIDEOS})).catch(()=>{});
+    import(new URL('./videos.js',location.href).href).then(m=>this.setState({videos:m.VIDEOS,warmup:m.WARMUP||null})).catch(()=>{});
   }
   sessionRef=el=>{if(this._ro){this._ro.disconnect();this._ro=null;}this._sessEl=el;if(!el)return;this._ro=new ResizeObserver(()=>this.measureRing());this._ro.observe(el);Array.from(el.children).forEach(c=>{if(!c.dataset.ring)this._ro.observe(c);});this.measureRing();};
   measureRing(){
     const el=this._sessEl;if(!el)return;
     const cs=getComputedStyle(el);const inner=el.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    // landscape: the ring has its own column, so it sizes to the height; the right column scales with it
+    if(getComputedStyle(el).display==='grid'){
+      const sideCtl=54,maxW=(el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight))*.46-sideCtl;
+      const ring=Math.round(Math.max(120,Math.min(inner-4,maxW)));
+      const k=Math.max(.8,Math.min(1.3,inner/330));
+      this._ringLock=null;
+      const st={};if(Math.abs(ring-(this.state.ringPx||0))>1)st.ringPx=ring;if(Math.abs(k-(this.state.uiK||1))>.02)st.uiK=k;if(Object.keys(st).length)this.setState(st);
+      return;
+    }
     let others=0,ringPad=0;Array.from(el.children).forEach(c=>{const m=getComputedStyle(c);const mt=parseFloat(m.marginTop)||0,mb=parseFloat(m.marginBottom)||0;if(c.dataset.ring){ringPad=(parseFloat(m.paddingTop)||0)+mt+mb;return;}
       // the list is flex:1 — count its content height, not its stretched box
       // the list is flex:1 — its scrollHeight equals the stretched box; sum its rows instead
@@ -1097,7 +1135,7 @@ class Component extends DCLogic {
   realToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
   previewing(){const p=this.state.previewDay;return !!p&&p!=='auto'&&p!==this.dayKey(new Date());}
   setPreviewDay(p){
-    this.setState({previewDay:p,cue:null,player:false,expandedMove:null,warm:[false,false,false]});
+    this.setState({previewDay:p,cue:null,player:false,expandedMove:null,warm:this.freshWarm()});
     try{const u=new URL(location.href);if(p==='auto')u.searchParams.delete('previewDay');else u.searchParams.set('previewDay',p);history.replaceState(null,'',u.pathname+u.search+u.hash);}catch(e){}
   }
   dayKey(d){return Component.DAYS[d.getDay()];}
@@ -1145,17 +1183,18 @@ class Component extends DCLogic {
     const d=this.state.data;const iso=this.iso(this.realToday());const logs={...d.logs};delete logs[iso];
     this.save({...d,logs});this.stopVoice();
     this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});
-    this.setState({warm:[false,false,false],expandedMove:null,ghost:null,form:{...this.state.form,rounds:0},testNote:'Today reset — clock back at 20:00.'});
+    this.setState({warm:this.freshWarm(),expandedMove:null,ghost:null,form:{...this.state.form,rounds:0},testNote:'Today reset — clock back at 20:00.'});
   }
   startFresh(){
     const d=this.state.data;
     this.save({bell:d.bell,mode:d.mode,friTue:d.friTue,friSat:d.friSat,voiceOn:d.voiceOn,weighIns:d.weighIns||[],goalWeight:d.goalWeight||null,logs:{},startDate:null});
     this.stopVoice();this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});
-    this.setState({warm:[false,false,false],freshArmed:false,freshWord:'',expandedMove:null,ghost:null,form:{...this.state.form,rounds:0},testNote:'Fresh start. Day 1 begins with your next session.',archOpen:null});
+    this.setState({warm:this.freshWarm(),freshArmed:false,freshWord:'',expandedMove:null,ghost:null,form:{...this.state.form,rounds:0},testNote:'Fresh start. Day 1 begins with your next session.',archOpen:null});
   }
+  freshWarm(){return Component.WARM.map(()=>false);}
   resetClock(){
     this.stopVoice();this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});
-    this.setState({warm:[false,false,false],expandedMove:null,ghost:null,moments:[],form:{...this.state.form,rounds:0},testNote:'Clock reset — back at 20:00.'});
+    this.setState({warm:this.freshWarm(),expandedMove:null,ghost:null,moments:[],form:{...this.state.form,rounds:0},testNote:'Clock reset — back at 20:00.'});
   }
 
   // ---------- timer ----------
@@ -1309,10 +1348,15 @@ class Component extends DCLogic {
       watch:()=>this.setState({cue:i,player:true})}));
     v.hasDayNote=!!sched.note;v.dayNote=sched.note||'';
     v.warmItems=Component.WARM.map((label,i)=>{const on=S.warm[i];return{label,on,toggle:()=>{const w=[...S.warm];w[i]=!w[i];this.setState({warm:w});this.buzz(15);},boxBg:on?'rgba(255,74,28,.12)':'transparent',deco:on?'line-through':'none',color:on?'rgba(28,39,51,.5)':INK};});
+    // warm-up video: embedded without autoplay (iOS needs the tap on its own play button anyway)
+    const warmEmb=S.warmup?this.embedUrl(S.warmup.url):null;
+    // built here rather than as template markup so the browser never requests a literal "{{ … }}" src before hydration
+    v.hasWarmVideo=!!warmEmb;
+    v.warmPlayer=warmEmb?React.createElement('iframe',{src:warmEmb.replace(/autoplay=1&?/,'')+'&rel=0',title:'5-minute warm-up video',allow:'autoplay; encrypted-media; picture-in-picture; fullscreen',allowFullScreen:true,style:{width:'100%',height:'100%',border:0,display:'block'}}):null;
     const warmDone=S.warm.every(Boolean)&&moves.length>0;
     v.startDisabled=!warmDone;v.startBg=warmDone?INK:'transparent';v.startColor=warmDone?PAPER:'rgba(28,39,51,.4)';
     v.startLabel=moves.length===0?'Pick Friday movements in Setup':warmDone?'Start the clock · 20:00':'Warm up to unlock the clock';
-    v.startTimer=()=>{if(!warmDone)return;this.beep(520,.12);if(!S.voiceOn)this.saveVoiceOn(true);this.setTimer({status:'countdown',endAt:Date.now()+3200,rounds:0,splits:[]});this.lockScreen();if(data.voiceOn)this.startVoice();};
+    v.startTimer=()=>{if(!warmDone)return;this.beep(520,.12);this.setTimer({status:'countdown',endAt:Date.now()+3200,rounds:0,splits:[]});this.lockScreen();if(data.voiceOn)this.startVoice();};
     v.countdownEl=t.status==='countdown'?this.flapClock(String(Math.max(1,Math.min(3,Math.ceil((t.endAt-S.now)/1000)))),INK,FLUO,3,'min(70vw, 44dvh)'):null;
 
     // running visuals
@@ -1377,7 +1421,7 @@ class Component extends DCLogic {
     v.formBellDown=()=>this.setState({form:{...S.form,bell:Math.max(5,S.form.bell-5)}});
     v.formBellUp=()=>this.setState({form:{...S.form,bell:S.form.bell+5}});
     const afterLog=nd=>{const q=[{kind:'crossed',drawIso:todayIso,auto:1700}];const target=nd.mode===5?5:3;if(this.weekCount(todayIso,nd)===target)q.push({kind:'weekdone',drawIso:todayIso,auto:2000});if(dayNumber===30)q.push({kind:'day30',drawIso:todayIso});this.pushMoments(q);};
-    v.saveSession=()=>{if(previewing){this.resetClock();return;}const nd={...data,bell:S.form.bell,logs:{...data.logs,[todayIso]:{kind:'amrap',dayKey:tKey,rounds:S.form.rounds,bell:S.form.bell,title:sched.title,minutes:t.ranMinutes!=null?t.ranMinutes:this.minutes()}}};this.save(nd);this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});this.setState({warm:[false,false,false]});this.buzz(80);afterLog(nd);};
+    v.saveSession=()=>{if(previewing){this.resetClock();return;}const nd={...data,bell:S.form.bell,logs:{...data.logs,[todayIso]:{kind:'amrap',dayKey:tKey,rounds:S.form.rounds,bell:S.form.bell,title:sched.title,minutes:t.ranMinutes!=null?t.ranMinutes:this.minutes()}}};this.save(nd);this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});this.setState({warm:this.freshWarm()});this.buzz(80);afterLog(nd);};
 
     // ---- progress ----
     const trainKeys=data.mode===5?['mon','tue','thu','fri','sat']:['mon','wed','fri'];
@@ -1417,6 +1461,9 @@ class Component extends DCLogic {
       v.cueName=m.name;v.cueReps=m.reps;v.cueText=m.cue;v.cueUrl=vid.url;v.cueBadge=b.badge;
       const emb=this.embedUrl(vid.url);
       v.cueEmbed=emb||'';v.showPlayer=S.player&&!!emb;v.showNoEmbed=S.player&&!emb;
+      // Shorts and reels are vertical: size by height so the clip isn't letterboxed; landscape CSS overrides the height
+      const vert=/\/shorts\/|instagram\.com/.test(vid.url);
+      v.cueAR=vert?'9/16':'16/9';v.cueW=vert?'auto':'100%';v.cueH=vert?'min(46dvh, calc((min(100vw,430px) - 44px) * 16 / 9))':'auto';
       v.showWatchBtn=!S.player;v.closeFlex=S.player?'1':'0 0 auto';
       v.openPlayer=()=>this.setState({player:true});
       v.cueSourceName=vid.source==='instagram'?'Instagram':'YouTube';

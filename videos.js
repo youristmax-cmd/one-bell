@@ -2,36 +2,38 @@
 // Swap any entry's `url` + `source` later (programmatically or by hand).
 //   source: "youtube" | "instagram"
 //   Instagram links look like https://www.instagram.com/p/XXXX/ or https://www.instagram.com/reel/XXXX/
-// Default urls are YouTube SEARCH links built from the movement name — not direct videos.
 // Direct links (youtube.com/watch?v=…, youtu.be/…, youtube.com/shorts/…, instagram.com/p|reel/…)
 // play INSIDE the form-cue sheet during a workout; search links can only open in a new tab.
 export const VIDEOS = [
   // Monday — Arms
-  { name: "Pullover",                   url: "https://www.youtube.com/results?search_query=kettlebell+pullover+form",                    source: "youtube" },
-  { name: "Curl into halo",             url: "https://www.youtube.com/results?search_query=kettlebell+curl+into+halo+form",              source: "youtube" },
-  { name: "Tricep dip",                 url: "https://www.youtube.com/results?search_query=kettlebell+tricep+dip+form",                  source: "youtube" },
-  { name: "Throw over",                 url: "https://www.youtube.com/results?search_query=kettlebell+throw+over+form",                  source: "youtube" },
-  { name: "Horn curl",                  url: "https://www.youtube.com/results?search_query=kettlebell+horn+curl+form",                   source: "youtube" },
+  { name: "Pullover",                   url: "https://youtube.com/shorts/jXO0pdYecmo",                                    source: "youtube" },
+  { name: "Curl into halo",             url: "https://youtube.com/shorts/OZbmpAgC8Bo",                                    source: "youtube" },
+  { name: "Tricep dip",                 url: "https://youtube.com/shorts/VYpt6d6Z9is",                                    source: "youtube" },
+  { name: "Throw over",                 url: "https://www.youtube.com/results?search_query=kettlebell+throw+over+form",   source: "youtube" },  // waiting on the original reel link
+  { name: "Horn curl",                  url: "https://youtube.com/shorts/-pvL3JjAbug",                                    source: "youtube" },
   // Tuesday — Back + hinge
-  { name: "Bent-over row",              url: "https://www.youtube.com/results?search_query=kettlebell+bent-over+row+form",               source: "youtube" },
-  { name: "Deadlift",                   url: "https://www.youtube.com/results?search_query=kettlebell+deadlift+form",                    source: "youtube" },
-  { name: "Ballistic row",              url: "https://www.youtube.com/results?search_query=kettlebell+ballistic+row+form",               source: "youtube" },
-  { name: "Shrug",                      url: "https://www.youtube.com/results?search_query=kettlebell+shrug+form",                       source: "youtube" },
-  { name: "Goblet good morning",        url: "https://www.youtube.com/results?search_query=kettlebell+goblet+good+morning+form",         source: "youtube" },
-  { name: "Renegade row",               url: "https://www.youtube.com/results?search_query=kettlebell+renegade+row+form",                source: "youtube" },
+  { name: "Bent-over row",              url: "https://youtube.com/shorts/PzvvvZmNdq0",                                    source: "youtube" },
+  { name: "Deadlift",                   url: "https://youtube.com/shorts/I7q_EPywprs",                                    source: "youtube" },
+  { name: "Ballistic row",              url: "https://youtube.com/shorts/UUH4AZ1CDZQ",                                    source: "youtube" },
+  { name: "Shrug",                      url: "https://youtube.com/shorts/WZaQV4BFPVk",                                    source: "youtube" },
+  { name: "Goblet good morning",        url: "https://youtube.com/shorts/ESxrXltZwYA",                                    source: "youtube" },
+  { name: "Renegade row",               url: "https://youtube.com/shorts/6rWeJh_e2jA",                                    source: "youtube" },
   // Thursday — Chest + shoulders
-  { name: "Floor press",                url: "https://www.youtube.com/results?search_query=kettlebell+floor+press+form",                 source: "youtube" },
-  { name: "Horn lift",                  url: "https://www.youtube.com/results?search_query=kettlebell+horn+lift+form",                   source: "youtube" },
-  { name: "Liftoff pushup",             url: "https://www.youtube.com/results?search_query=kettlebell+liftoff+pushup+form",              source: "youtube" },
-  { name: "Halo",                       url: "https://www.youtube.com/results?search_query=kettlebell+halo+form",                        source: "youtube" },
-  { name: "Overhead press",             url: "https://www.youtube.com/results?search_query=kettlebell+overhead+press+form",              source: "youtube" },
+  { name: "Floor press",                url: "https://youtube.com/shorts/2ieUwoU_nHA",                                    source: "youtube" },
+  { name: "Horn lift",                  url: "https://www.youtube.com/results?search_query=kettlebell+horn+lift+form",    source: "youtube" },  // waiting on the original reel link
+  { name: "Uppercut",                   url: "https://youtube.com/shorts/e4gAbnf69_U",                                    source: "youtube" },
+  { name: "Halo",                       url: "https://youtube.com/shorts/7oPYzH80bM4",                                    source: "youtube" },
+  { name: "Overhead press",             url: "https://youtube.com/shorts/uzPQm5zgPXo",                                    source: "youtube" },
   // Friday — Core + conditioning
-  { name: "Two-hand swing",             url: "https://www.youtube.com/results?search_query=kettlebell+two-hand+swing+form",              source: "youtube" },
-  { name: "High pull",                  url: "https://www.youtube.com/results?search_query=kettlebell+high+pull+form",                   source: "youtube" },
-  { name: "Sit-up to press",            url: "https://www.youtube.com/results?search_query=kettlebell+sit-up+to+press+form",             source: "youtube" },
-  { name: "Dead bug",                   url: "https://www.youtube.com/results?search_query=kettlebell+dead+bug+form",                    source: "youtube" },
+  { name: "Two-hand swing",             url: "https://youtube.com/shorts/n1df4ASFeZU",                                    source: "youtube" },
+  { name: "High pull",                  url: "https://youtube.com/shorts/Z9bPfPi0mog",                                    source: "youtube" },
+  { name: "Sit-up to press",            url: "https://youtube.com/shorts/XkbhtebFab0",                                    source: "youtube" },
+  { name: "Dead bug",                   url: "https://youtube.com/shorts/bWAhAPSvf1k",                                    source: "youtube" },
   // Saturday — Legs (Halo shared with Thursday, listed once above)
-  { name: "Squat into goblet thruster", url: "https://www.youtube.com/results?search_query=kettlebell+squat+into+goblet+thruster+form",  source: "youtube" },
-  { name: "Cossack squat",              url: "https://www.youtube.com/results?search_query=kettlebell+cossack+squat+form",               source: "youtube" },
-  { name: "Twisted reverse lunge",      url: "https://www.youtube.com/results?search_query=kettlebell+twisted+reverse+lunge+form",       source: "youtube" }
+  { name: "Squat into goblet thruster", url: "https://youtube.com/shorts/-dONhXBbPHQ",                                    source: "youtube" },
+  { name: "Cossack squat",              url: "https://youtube.com/shorts/NIv8cdHM3s4",                                    source: "youtube" },
+  { name: "Twisted reverse lunge",      url: "https://youtube.com/shorts/8MLB3y8D_g0",                                    source: "youtube" }
 ];
+
+// Played in the warm-up block before every session.
+export const WARMUP = { name: "5 Minute Pre Workout Warm Up", url: "https://youtu.be/GQXpRWdtzRg", source: "youtube" };
