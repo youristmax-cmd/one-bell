@@ -1009,7 +1009,7 @@ class Component extends DCLogic {
   static DAYS = ['sun','mon','tue','wed','thu','fri','sat'];
   static LONG = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
   // first item is the warm-up video (videos.js → WARMUP), played in the block above the checklist
-  static WARM = ['5-min warm-up video','30 jumping jacks','20 pushups',"Light stretching — whatever's tight"];
+  static WARM = ['5-min warm-up video','20 pushups'];
   static ACTIVITIES = ['Walk','Sport','Bike','Swim','Hike','Yard work','Other'];
   static MISSED = [
     "Missing one day is nothing. Missing one and deciding you've blown it — that's what ends things. Today's the one that counts.",
@@ -1115,12 +1115,20 @@ class Component extends DCLogic {
       this.show(s,'ifr');if(s.ifr.src!==emb)s.ifr.src=emb;return;
     }
     if(!s.yt){
-      const box=document.createElement('div');box.style.cssText='width:100%;height:100%';const inner=document.createElement('div');box.appendChild(inner);s.el.appendChild(box);
+      const box=document.createElement('div');box.style.cssText='position:relative;width:100%;height:100%;overflow:hidden';s.el.appendChild(box);
+      // We build the YouTube frame ourselves (the API then attaches to it) so it can't scroll: iOS gives a
+      // scrollable frame its own native scroll view, which it offsets by the notch safe area in landscape —
+      // the picture came out shifted right and cut off. controls=0: no play bar or play/pause button over the video.
+      const f=document.createElement('iframe');
+      const q=new URLSearchParams({enablejsapi:'1',origin:location.origin,playsinline:'1',rel:'0',modestbranding:'1',controls:'0',fs:'0',disablekb:'1',iv_load_policy:'3',start:String(start||0)});
+      f.src='https://www.youtube.com/embed/'+id+'?'+q;
+      f.setAttribute('scrolling','no');f.setAttribute('frameborder','0');f.setAttribute('allowfullscreen','');
+      f.allow='autoplay; encrypted-media; picture-in-picture';f.title='Video';
+      f.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block;overflow:hidden';
+      box.appendChild(f);
       s.yt={box,p:null,id,want:{start,autoplay}};this.show(s,'yt');
       this.ytApi().then(YT=>{
-        const p=new YT.Player(inner,{width:'100%',height:'100%',videoId:s.yt.id,
-          // controls:0 — no play bar or play/pause button over the video; tapping the picture still pauses/plays
-          playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,fs:0,disablekb:1,iv_load_policy:3,start:s.yt.want.start||0},
+        const p=new YT.Player(f,{
           events:{
             onReady:()=>{s.yt.p=p;const w=s.yt.want;if(w.id&&w.id!==s.yt.id){this.ytLoad(s,w.id,w.start,w.autoplay);}else if(w.autoplay)this.ytPlay(p,which);},
             onStateChange:e=>{
