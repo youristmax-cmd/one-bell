@@ -59,6 +59,23 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .ob-irow > span:nth-child(2),.ob-irow > span:nth-child(3){font-size:19px!important}
   .ob-wrow{min-height:44px!important;padding:6px 0!important}
   .ob-warmvid{margin-top:10px!important}
+  /* workout day: list on the left; big warm-up video on the right, checkboxes + Start under it */
+  .ob-today:has(> .ob-warmcol){grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}
+  .ob-today > .ob-warmcol{zoom:1!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,.6fr);column-gap:14px;row-gap:6px;align-content:start}
+  .ob-warmcol > *{grid-column:1 / -1;margin-top:0!important}
+  .ob-warmcol .ob-wu-hdr,.ob-warmcol .ob-wu-cap,.ob-warmcol .ob-wu-form{display:none!important}
+  .ob-warmcol .ob-warmvid{width:min(100%, calc((100dvh - var(--ob-nav) - 126px) * 16 / 9))!important;justify-self:center}
+  .ob-warmcol .ob-wchk{grid-column:1;display:grid!important;grid-template-columns:1fr 1fr;column-gap:10px}
+  .ob-warmcol .ob-wrow{min-height:34px!important;padding:2px 0!important;gap:8px!important}
+  .ob-warmcol .ob-wrow > span:first-child{width:22px!important;height:22px!important}
+  .ob-warmcol .ob-wrow > span:first-child > span{width:27px!important;height:3px!important}
+  .ob-warmcol .ob-wrow > span:last-child{font-size:14px!important;line-height:1.15}
+  .ob-warmcol .ob-wstart{grid-column:2;align-self:stretch;min-height:0!important;font-size:15px!important;border-width:2px!important;padding:0 8px}
+  .ob-warmcol .ob-wu-link{order:5;font-size:11px!important;margin-top:0!important}
+  .ob-today > .ob-warmcol{position:relative}
+  .ob-today .ob-tapcap{display:none!important}
+  .ob-today .ob-daynote{margin-top:10px!important;font-size:14px!important;line-height:1.35!important}
+  .ob-warmcol .ob-wu-sound{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;pointer-events:none;white-space:nowrap;margin:0!important;box-shadow:2px 2px 0 #1c2733}
   .ob-videos .ob-hero{font-size:28px!important}
   .ob-videos .ob-vgroups{display:block!important;columns:3;column-gap:26px;margin-top:12px!important}
   .ob-videos .ob-vgroups > *{margin-bottom:14px}
@@ -77,14 +94,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;column-gap:18px}
   .ob-sess>*{grid-column:2;min-width:0}
   .ob-sess>[data-ring]{grid-column:1;grid-row:1 / -1;align-self:center;padding-top:0!important}
-  .ob-sess>[data-list]{overflow-y:auto!important;min-height:0}
+  .ob-sess>[data-list]{overflow:hidden!important;min-height:0}
   /* form-cue sheet: full height, text left, video right */
   .ob-cue{left:0!important;right:0!important;transform:none!important;max-width:none!important;top:0;border-top:0!important;
     display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;align-content:start;
     padding:14px max(20px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))!important}
   .ob-cue>*{grid-column:1}
   .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 8;margin-top:0!important;align-self:start}
-  .ob-cue-frame{width:auto!important;height:calc(100dvh - 28px - env(safe-area-inset-bottom))!important;max-width:min(62vw,100%)!important}
+  .ob-cue-frame{--h:calc(100dvh - 28px - env(safe-area-inset-bottom));height:var(--h)!important;max-width:min(62vw,100%)!important}
+  .ob-cue-frame[data-v="1"]{width:calc(var(--h) * 9 / 16)!important}
+  .ob-cue-frame[data-v="0"]{width:min(62vw, calc(var(--h) * 16 / 9))!important}
   .ob-moment{justify-content:safe center!important;overflow-y:auto!important;padding-left:max(20px,env(safe-area-inset-left))!important;padding-right:max(20px,env(safe-area-inset-right))!important}
 }
 </style>
@@ -265,28 +284,26 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         </button>
       </sc-for>
     </div>
-    <div style="margin-top:8px;font:400 13px Archivo;font-style:italic;color:rgba(28,39,51,.7)">Tap a movement for form cues. Work the list in order, then start it again.</div>
-  </sc-if>
-  <sc-if value="{{ showIdle }}" hint-placeholder-val="{{ true }}"><div class="ob-span2">
+    <div class="ob-tapcap" style="margin-top:8px;font:400 13px Archivo;font-style:italic;color:rgba(28,39,51,.7)">Tap a movement for form cues. Work the list in order, then start it again.</div>
     <sc-if value="{{ hasDayNote }}" hint-placeholder-val="{{ true }}">
-      <div style="margin-top:20px;font:400 16px/1.45 Archivo;text-wrap:pretty;padding-left:14px;border-left:3px solid #ff4a1c">{{ dayNote }}</div>
+      <div class="ob-daynote" style="margin-top:20px;font:400 16px/1.45 Archivo;text-wrap:pretty;padding-left:14px;border-left:3px solid #ff4a1c">{{ dayNote }}</div>
     </sc-if>
+  </sc-if>
+  <sc-if value="{{ showIdle }}" hint-placeholder-val="{{ true }}"><div class="ob-span2 ob-warmcol">
 
-    <div style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
+    <div class="ob-wu-hdr" style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px solid #1c2733;padding-bottom:6px">
       <div style="font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Warm-up</div>
       <div style="font:700 14px Archivo;font-stretch:110%;text-transform:uppercase">Not on the clock</div>
     </div>
     <sc-if value="{{ hasWarmVideo }}" hint-placeholder-val="{{ true }}">
       <div class="ob-warmvid" style="margin-top:14px;width:100%;aspect-ratio:16/9;background:#1c2733;border:2px solid #1c2733;overflow:hidden">{{ warmPlayer }}</div>
       <sc-if value="{{ warmMuted }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:8px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">Playing muted — tap the video's speaker for sound</div>
+        <div class="ob-wu-sound" style="margin-top:8px;padding:8px 12px;background:#ff4a1c;color:#1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em">Playing muted · tap the video for sound</div>
       </sc-if>
-      <div style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Starts at Pogo Hops. Follow along — it crosses itself off when it ends.</div>
-      <a href="{{ warmOpenUrl }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#1c2733">Open in the YouTube app →</a>
+      <div class="ob-wu-cap" style="margin-top:8px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Starts at Pogo Hops. Follow along — it crosses itself off when it ends.</div>
+      <a class="ob-wu-link" href="{{ warmOpenUrl }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#1c2733">Open in the YouTube app →</a>
     </sc-if>
-  </div></sc-if>
-  <sc-if value="{{ showIdle }}" hint-placeholder-val="{{ true }}"><div class="ob-span3">
-    <div style="display:flex;flex-direction:column">
+    <div class="ob-wchk" style="display:flex;flex-direction:column">
       <sc-for list="{{ warmItems }}" as="w" hint-placeholder-count="3">
         <button class="ob-wrow" onClick="{{ w.toggle }}" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:58px;padding:10px 0;background:transparent;border:0;border-bottom:1px solid #1c2733;color:#1c2733">
           <span style="width:30px;height:30px;position:relative;flex-shrink:0;border:2px solid #1c2733;background: {{ w.boxBg }}">
@@ -299,8 +316,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         </button>
       </sc-for>
     </div>
-    <button onClick="{{ startTimer }}" disabled="{{ startDisabled }}" style="margin-top:22px;width:100%;min-height:72px;border:3px solid #1c2733;font:700 22px Archivo;font-stretch:115%;letter-spacing:.02em;text-transform:uppercase;background: {{ startBg }};color: {{ startColor }}">{{ startLabel }}</button>
-    <div style="margin-top:10px;text-align:center;font:400 14px Archivo;font-style:italic">When your form breaks, the round is over.</div>
+    <button class="ob-wstart" onClick="{{ startTimer }}" disabled="{{ startDisabled }}" style="margin-top:22px;width:100%;min-height:72px;border:3px solid #1c2733;font:700 22px Archivo;font-stretch:115%;letter-spacing:.02em;text-transform:uppercase;background: {{ startBg }};color: {{ startColor }}">{{ startLabel }}</button>
+    <div class="ob-wu-form" style="margin-top:10px;text-align:center;font:400 14px Archivo;font-style:italic">When your form breaks, the round is over.</div>
   </div>
   </sc-if>
 
@@ -770,12 +787,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
     <div style="margin-top:14px;font:400 20px/1.4 Archivo;text-wrap:pretty">{{ cueText }}</div>
     <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ false }}">
-      <div class="ob-cue-player" style="margin-top:16px;display:flex;justify-content:center"><div class="ob-cue-frame" style="overflow:hidden;background:#1c2733;border:2px solid #1c2733;max-width:100%;aspect-ratio: {{ cueAR }};width: {{ cueW }};height: {{ cueH }}">
+      <div class="ob-cue-player" style="margin-top:16px;display:flex;justify-content:center"><div class="ob-cue-frame" data-v="{{ cueV }}" style="overflow:hidden;background:#1c2733;border:2px solid #1c2733;max-width:100%;aspect-ratio: {{ cueAR }};width: {{ cueW }};height: {{ cueH }}">
         {{ cuePlayer }}
       </div></div>
     </sc-if>
     <sc-if value="{{ cueMuted }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:8px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">Playing muted — tap the video's speaker for sound</div>
+      <div style="margin-top:8px;padding:8px 12px;background:#ff4a1c;color:#1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em">Playing muted · tap the video for sound</div>
     </sc-if>
     <sc-if value="{{ showNoEmbed }}" hint-placeholder-val="{{ false }}">
       <div style="margin-top:16px;padding:14px 16px;border:2px dashed #1c2733;font:400 15px/1.4 Archivo;text-wrap:pretty">
@@ -916,7 +933,7 @@ class Component extends DCLogic {
       {name:'Shrug',reps:'15 each side',cue:'Straight up, no rolling. Pause at the top.'},
       {name:'Goblet good morning',reps:'10',cue:'A hinge with a soft knee. Hips travel back, spine stays long. Go light here, always.'},
       {name:'Renegade row',reps:'10 each side',cue:'Plank first, row second. If your hips twist, widen your feet.'}],
-      note:'Learn the hinge first: stand a foot from a wall, push your hips back until they touch it, stand up. The round ends the moment your spine rounds.'},
+      note:''},
     wed:{title:'Active recovery',short:'Move',sub:'No bell. But move.',kind:'recovery'},
     thu:{title:'Chest + shoulders',short:'Chest + shoulders',sub:'Push day two',kind:'amrap',moves:[
       {name:'Floor press',reps:'10 each arm',cue:"Elbow at 45°, triceps touch the floor, then press. Don't flare it straight out."},
@@ -1041,11 +1058,17 @@ class Component extends DCLogic {
     this.ytApi().then(YT=>{
       if(!host._yt||host._yt.dead)return;
       const p=new YT.Player(inner,{width:'100%',height:'100%',videoId:id,
-        playerVars:{playsinline:1,rel:0,modestbranding:1,start:start||0},
+        // controls:0 — no play bar or play/pause button over the video; tapping the picture still pauses/plays
+        playerVars:{playsinline:1,rel:0,modestbranding:1,controls:0,fs:0,disablekb:1,iv_load_policy:3,start:start||0},
         events:{
           onReady:()=>{if(autoplay||(which==='warm'&&this._autoWarm)){if(which==='warm')this._autoWarm=false;this.ytPlay(p,which);}},
           onStateChange:e=>{
             if(e.data===YT.PlayerState.ENDED&&onEnd)onEnd();
+            // YouTube switches captions on for muted autoplay; clear the track whenever playback starts
+            if(e.data===YT.PlayerState.PLAYING){try{p.setOption('captions','track',{});p.setOption('cc','track',{});}catch(err){}}
+            // sound needs a tap inside the player: with controls hidden, tapping the picture pauses it —
+            // if it was playing muted, treat that tap as "sound on" (the tap counts as a gesture inside the player)
+            if(e.data===YT.PlayerState.PAUSED&&this.state.ytMuted===which&&p.isMuted()){try{p.unMute();p.setVolume(100);p.playVideo();}catch(err){}}
             if(e.data===YT.PlayerState.PLAYING&&this.state.ytMuted===which&&!p.isMuted())this.setState({ytMuted:null});
           }}});
       host._yt.p=p;
@@ -1131,11 +1154,18 @@ class Component extends DCLogic {
     if(getComputedStyle(el).display==='grid'){
       const sideCtl=54,maxW=(el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight))*.52-sideCtl;
       const ring=Math.round(Math.max(120,Math.min(inner-4,maxW)));
-      const k=Math.max(.8,Math.min(1.3,inner/330));
+      // the right-hand stack never scrolls: measure it at the current scale and rescale so it just fits the height
+      let used=0;Array.from(el.children).forEach(c=>{if(c.dataset.ring)return;const m=getComputedStyle(c);
+        const h=c.dataset.list?Array.from(c.children).reduce((a,r)=>a+r.offsetHeight,0)+(parseFloat(m.borderTopWidth)||0):c.offsetHeight;
+        used+=h+(parseFloat(m.marginTop)||0)+(parseFloat(m.marginBottom)||0);});
+      const fixedH=58;   // header row + status strip don't scale
+      const prevK=this.state.uiK||1;
+      const k=Math.max(.6,Math.min(1.25,prevK*(inner-fixedH-6)/Math.max(1,used-fixedH)));
       this._ringLock=null;
-      const st={};if(Math.abs(ring-(this.state.ringPx||0))>1)st.ringPx=ring;if(Math.abs(k-(this.state.uiK||1))>.02)st.uiK=k;if(Object.keys(st).length)this.setState(st);
+      const st={};if(!this.state.landSess)st.landSess=true;if(Math.abs(ring-(this.state.ringPx||0))>1)st.ringPx=ring;if(Math.abs(k-prevK)>.02)st.uiK=k;if(Object.keys(st).length)this.setState(st);
       return;
     }
+    if(this.state.landSess)this.setState({landSess:false});
     let others=0,ringPad=0;Array.from(el.children).forEach(c=>{const m=getComputedStyle(c);const mt=parseFloat(m.marginTop)||0,mb=parseFloat(m.marginBottom)||0;if(c.dataset.ring){ringPad=(parseFloat(m.paddingTop)||0)+mt+mb;return;}
       // the list is flex:1 — count its content height, not its stretched box
       // the list is flex:1 — its scrollHeight equals the stretched box; sum its rows instead
@@ -1511,7 +1541,8 @@ class Component extends DCLogic {
     const misreg=lastMin?1.6+((60000-remaining)/1000)*.06:1.4;
     const paused=t.status==='paused';
     const RING=(S.ringPx||240)+'px';v.ringPx=RING;v.sessionRef=this.sessionRef;
-    const K=S.uiK||1;v.kRounds=Math.round(38*K)+'px';v.kTally=Math.round(20*K)+'px';v.kTallyW=(4*K).toFixed(1)+'px';v.kSlashW=Math.round(34*K)+'px';v.kRow=Math.round(28*K)+'px';v.kRowFs=Math.round(14*K)+'px';v.kCue=Math.round(13*K)+'px';v.kCtl=Math.round(34*K)+'px';v.kBtn=Math.round(58*K)+'px';v.kBtnFs=Math.round(23*K)+'px';v.kGap=Math.round(6*K)+'px';
+    // landscape: smaller round tally so the list and button fit without scrolling
+    const K=S.uiK||1,LT=S.landSess?.78:1;v.kRounds=Math.round(38*K*LT)+'px';v.kTally=Math.round(20*K*LT)+'px';v.kTallyW=(4*K).toFixed(1)+'px';v.kSlashW=Math.round(34*K)+'px';v.kRow=Math.round(28*K)+'px';v.kRowFs=Math.round(14*K)+'px';v.kCue=Math.round(13*K)+'px';v.kCtl=Math.round(34*K)+'px';v.kBtn=Math.round(58*K)+'px';v.kBtnFs=Math.round(23*K)+'px';v.kGap=Math.round(6*K)+'px';
     v.flapClock=(v.showRunning)?this.flapClock(v.clock,paused?'rgba(28,39,51,.45)':lastMin?FLUO:INK,paused?'transparent':lastMin?INK:FLUO,+misreg.toFixed(2),RING):null;
     // stopwatch bezel: 60 ticks, one inks in every total/60 (20 s on a 20:00 clock)
     const elapsedMs=total-remaining;
@@ -1605,7 +1636,9 @@ class Component extends DCLogic {
       v.cueMuted=S.ytMuted==='cue';v.showPlayer=S.player&&!!emb;v.showNoEmbed=S.player&&!emb;
       // Shorts and reels are vertical: size by height so the clip isn't letterboxed; landscape CSS overrides the height
       const vert=/\/shorts\/|instagram\.com/.test(vid.url);
-      v.cueAR=vert?'9/16':'16/9';v.cueW=vert?'auto':'100%';v.cueH=vert?'min(46dvh, calc((min(100vw,430px) - 44px) * 16 / 9))':'auto';
+      // explicit width from the height (not aspect-ratio alone): iPhone Safari collapsed the auto width to 0 in landscape
+      const cueHv='min(46dvh, calc((min(100vw,430px) - 44px) * 16 / 9))';
+      v.cueV=vert?'1':'0';v.cueAR=vert?'9/16':'16/9';v.cueW=vert?'calc('+cueHv+' * 9 / 16)':'100%';v.cueH=vert?cueHv:'auto';
       v.showWatchBtn=!S.player;v.closeFlex=S.player?'1':'0 0 auto';
       v.openPlayer=()=>this.setState({player:true});
       v.cueSourceName=vid.source==='instagram'?'Instagram':'YouTube';
