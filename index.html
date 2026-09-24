@@ -50,6 +50,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .ob-screen > .ob-span4{display:block;grid-column:4;grid-row:1 / -1}
   .ob-screen > .ob-span2 > :first-child,.ob-screen > .ob-span3 > :first-child,.ob-screen > .ob-span4 > :first-child{margin-top:0!important}
   .ob-setup > :not(.ob-sess){zoom:.72}
+  .ob-setup .ob-sync-note{display:none!important}
   .ob-step{width:46px!important;height:46px!important}
   .ob-stepnum{font-size:46px!important}
   .ob-cbtn{min-height:38px!important}
@@ -751,6 +752,33 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     </div>
   </div>
 
+  <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Phone + computer</div>
+  <sc-if value="{{ syncOff }}" hint-placeholder-val="{{ true }}">
+    <div class="ob-sync-note" style="margin-top:10px;font:400 14px/1.45 Archivo;text-wrap:pretty">Keep one log on every device. It lives in a private file on your own GitHub account — nobody else's server.</div>
+    <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=One+Bell+sync" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:10px;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em;color:#1c2733">1. Make a key on GitHub →</a>
+    <div class="ob-sync-note" style="margin-top:6px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.8">The page opens with the right box already ticked (gist). Scroll down, press Generate token, copy it.</div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input value="{{ syncToken }}" onChange="{{ onSyncToken }}" placeholder="2. Paste the key here" autoCapitalize="none" autoCorrect="off" spellCheck="false" style="flex:1;min-width:0;min-height:48px;background:#f7f2e4;border:2px solid #1c2733;padding:0 12px;font:600 14px ui-monospace,Menlo,monospace;color:#1c2733;outline:none">
+      <button onClick="{{ doConnect }}" style="min-height:48px;padding:0 16px;border:0;background:#1c2733;color:#ece6d6;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase">Connect</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ syncOn }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:10px;font:700 14px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em;color:#ff4a1c">Connected · {{ syncWhen }}</div>
+    <div class="ob-sync-note" style="margin-top:4px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.8">Syncs when you open the app, when you log something, and when you come back to it.</div>
+    <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
+      <button onClick="{{ doSyncNow }}" style="min-height:48px;padding:0 16px;border:2px solid #1c2733;background:transparent;color:#1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase">{{ syncNowLabel }}</button>
+      <button onClick="{{ doPair }}" style="min-height:48px;padding:0 16px;border:0;background:#ff4a1c;color:#1c2733;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase">Copy link for other device</button>
+      <button onClick="{{ doDisconnect }}" style="min-height:48px;padding:0 14px;border:2px solid #1c2733;background:transparent;color:#1c2733;font:600 13px Archivo">Disconnect</button>
+    </div>
+    <sc-if value="{{ pairShown }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:10px;padding:12px;border:2px dashed #1c2733;font:400 12px/1.4 ui-monospace,Menlo,monospace;word-break:break-all">{{ pairUrl }}</div>
+      <div class="ob-sync-note" style="margin-top:6px;font:400 13px/1.4 Archivo;font-style:italic;opacity:.8">Open this link on the other device once — it connects it and carries the log across. Treat it like a password.</div>
+    </sc-if>
+  </sc-if>
+  <sc-if value="{{ syncMsg }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:10px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c">{{ syncMsg }}</div>
+  </sc-if>
+
   <div class="ob-span2">
   <div style="margin-top:26px;border-bottom:3px solid #1c2733;padding-bottom:6px;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">Days a week</div>
   <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;border:2px solid #1c2733">
@@ -1150,6 +1178,8 @@ class Component extends DCLogic {
     "A missed day isn't a broken streak. It's a Tuesday. Show up today and it never happened."
   ];
   static LS = 'onebell.data';
+  static LSS = 'onebell.sync';          // {token, id} — kept apart from the log so "Start fresh" doesn't disconnect
+  static SYNCFILE = 'one-bell-data.json';
   static LST = 'onebell.timer';
   // palette
   // Split-flap digit: navy ink card on paper; flips on value change, animation state survives re-renders.
@@ -1323,15 +1353,15 @@ class Component extends DCLogic {
     if(!iso||!f)return;
     const k=this.dayKey(this.parseIso(iso)),sc=this.schedule(k,d);
     const log=f.kind==='recovery'
-      ?{kind:'recovery',dayKey:k,activity:f.activity,minutes:f.minutes,title:sc.title}
-      :{kind:'amrap',dayKey:k,rounds:f.rounds,bell:f.bell,title:sc.title,minutes:this.minutes()};
+      ?{kind:'recovery',dayKey:k,activity:f.activity,minutes:f.minutes,title:sc.title,at:Date.now()}
+      :{kind:'amrap',dayKey:k,rounds:f.rounds,bell:f.bell,title:sc.title,minutes:this.minutes(),at:Date.now()};
     this.save({...d,logs:{...d.logs,[iso]:log}});
     this.buzz(60);this.setState({editIso:null,editForm:null});
   }
   removeEdit(){
     const iso=this.state.editIso,d=this.state.data;if(!iso)return;
     const logs={...d.logs};delete logs[iso];
-    this.save({...d,logs});this.buzz(30);this.setState({editIso:null,editForm:null});
+    this.save({...d,logs,deleted:{...(d.deleted||{}),[iso]:Date.now()}});this.buzz(30);this.setState({editIso:null,editForm:null});
   }
   // step to another movement on the video page (wraps around the day's list)
   cueGo(delta){
@@ -1411,7 +1441,12 @@ class Component extends DCLogic {
       else if(e.key==='Escape')this.setState({cue:null,player:false});
     };
     window.addEventListener('keydown',this._keys);
-    this._vis=()=>{if(document.visibilityState==='visible'&&this.sessionActive())this.lockScreen();};
+    try{const m=location.hash.match(/#s=([A-Za-z0-9+/=]+)/);
+      if(m){const c=JSON.parse(atob(m[1]));if(c&&c.t&&c.i){this.setSyncCfg({token:c.t,id:c.i});}
+        history.replaceState(null,'',location.pathname+location.search);}}catch(e){}
+    st.sync=this.syncCfg();
+    if(st.sync)setTimeout(()=>this.syncNow(),300);
+    this._vis=()=>{if(document.visibilityState==='visible'){if(this.sessionActive())this.lockScreen();if(this.syncCfg())this.syncNow();}};
     document.addEventListener('visibilitychange',this._vis);
     import(new URL('./videos.js',location.href).href).then(m=>this.setState({videos:m.VIDEOS,warmup:m.WARMUP||null})).catch(()=>{});
   }
@@ -1589,7 +1624,77 @@ class Component extends DCLogic {
     if(key==='sun') return {...P.sun,key};
     return {key,title:'Off day',short:'Off',sub:'Three days a week, forever',kind:'rest'};
   }
-  save(data){this.setState({data});try{localStorage.setItem(Component.LS,JSON.stringify(data));}catch(e){}}
+  save(data,keepStamp){
+    if(!keepStamp)data={...data,updatedAt:Date.now()};
+    this.setState({data});
+    try{localStorage.setItem(Component.LS,JSON.stringify(data));}catch(e){}
+    if(!keepStamp&&this.syncCfg()){clearTimeout(this._syncT);this._syncT=setTimeout(()=>this.syncNow(),1500);}
+  }
+
+  // ---------- sync: one secret file on the user's own GitHub account ----------
+  syncCfg(){try{return JSON.parse(localStorage.getItem(Component.LSS)||'null');}catch(e){return null;}}
+  setSyncCfg(c){try{if(c)localStorage.setItem(Component.LSS,JSON.stringify(c));else localStorage.removeItem(Component.LSS);}catch(e){}this.setState({sync:c});}
+  gh(path,opts,token){
+    return fetch('https://api.github.com'+path,{...(opts||{}),headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'}});
+  }
+  // two devices, no server to referee: merge instead of overwrite
+  mergeData(local,remote){
+    if(!remote||typeof remote!=='object')return local;
+    if(!local)return remote;
+    const newer=(local.updatedAt||0)>=(remote.updatedAt||0)?local:remote, older=newer===local?remote:local;
+    const out={...older,...newer};                                   // settings: whichever device saved last
+    const logs={...(older.logs||{})};
+    for(const k in (newer.logs||{})){const a=newer.logs[k],b=logs[k];if(!b||(a.at||0)>=(b.at||0))logs[k]=a;}
+    const del={...(older.deleted||{})};
+    for(const k in (newer.deleted||{}))del[k]=Math.max(del[k]||0,newer.deleted[k]);
+    for(const k in del){const l=logs[k];if(l&&del[k]>(l.at||0))delete logs[k];}   // a day removed stays removed
+    out.logs=logs;out.deleted=del;
+    const wi={};
+    for(const w of [...(older.weighIns||[]),...(newer.weighIns||[])]){const c=wi[w.date];if(!c||(w.at||0)>=(c.at||0))wi[w.date]=w;}
+    out.weighIns=Object.values(wi).sort((x,y)=>x.date<y.date?-1:1);
+    out.updatedAt=Math.max(local.updatedAt||0,remote.updatedAt||0);
+    return out;
+  }
+  async connectSync(token){
+    token=(token||'').trim();
+    if(!token){this.setState({syncMsg:'Paste your GitHub key first.'});return;}
+    this.setState({syncMsg:'Connecting…'});
+    try{
+      const r=await this.gh('/gists?per_page=100',{},token);
+      if(!r.ok)throw new Error(r.status===401?'that key was rejected':'GitHub said '+r.status);
+      const list=await r.json();
+      let g=list.find(x=>x.files&&x.files[Component.SYNCFILE]);
+      if(!g){
+        const c=await this.gh('/gists',{method:'POST',body:JSON.stringify({description:'One Bell workout log',public:false,files:{[Component.SYNCFILE]:{content:JSON.stringify(this.state.data||{})}}})},token);
+        if(!c.ok)throw new Error('could not create the file ('+c.status+')');
+        g=await c.json();
+      }
+      this.setSyncCfg({token,id:g.id});
+      await this.syncNow(true);
+    }catch(e){this.setState({syncMsg:'Could not connect: '+(e.message||e)});}
+  }
+  async syncNow(force){
+    const c=this.syncCfg();if(!c||this._syncing)return;
+    this._syncing=true;this.setState({syncBusy:true});
+    try{
+      const r=await this.gh('/gists/'+c.id,{},c.token);
+      if(!r.ok)throw new Error(r.status===404?'the file is gone — reconnect':'GitHub said '+r.status);
+      const g=await r.json(),f=g.files&&g.files[Component.SYNCFILE];
+      let remote=null;
+      if(f){const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;remote=JSON.parse(txt||'null');}
+      const merged=this.mergeData(this.state.data||{},remote);
+      if(JSON.stringify(merged)!==JSON.stringify(this.state.data))this.save(merged,true);
+      const body=JSON.stringify(merged);
+      if(force||body!==JSON.stringify(remote)){
+        const up=await this.gh('/gists/'+c.id,{method:'PATCH',body:JSON.stringify({files:{[Component.SYNCFILE]:{content:body}}})},c.token);
+        if(!up.ok)throw new Error('could not save ('+up.status+')');
+      }
+      this.setState({syncMsg:'',syncAt:Date.now()});
+    }catch(e){this.setState({syncMsg:String(e.message||e)});}
+    this._syncing=false;this.setState({syncBusy:false});
+  }
+  pairLink(){const c=this.syncCfg();if(!c)return '';
+    return location.origin+location.pathname+'#s='+btoa(JSON.stringify({t:c.token,i:c.id}));}
   setTimer(timer){this.setState({timer});try{localStorage.setItem(Component.LST,JSON.stringify(timer));}catch(e){}}
   minutes(){return Math.max(1,Number(this.props.timerMinutes)||20);}
   beep(freq,dur,type){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;this._ac=this._ac||new C();const o=this._ac.createOscillator(),g=this._ac.createGain();o.type=type||'square';o.frequency.value=freq;g.gain.value=.08;o.connect(g);g.connect(this._ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,this._ac.currentTime+dur);o.stop(this._ac.currentTime+dur);}catch(e){}}
@@ -1625,7 +1730,7 @@ class Component extends DCLogic {
   }
   resetToday(){
     const d=this.state.data;const iso=this.iso(this.realToday());const logs={...d.logs};delete logs[iso];
-    this.save({...d,logs});this.stopVoice();
+    this.save({...d,logs,deleted:{...(d.deleted||{}),[iso]:Date.now()}});this.stopVoice();
     this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});
     this.setState({warm:this.freshWarm(),expandedMove:null,ghost:null,form:{...this.state.form,rounds:0},testNote:'Today reset — clock back at 20:00.'});
   }
@@ -1796,7 +1901,7 @@ class Component extends DCLogic {
       v.loggedHeadline=todayLog.kind==='amrap'?todayLog.rounds+(todayLog.rounds===1?' round':' rounds'):todayLog.minutes+' min '+(todayLog.activity||'').toLowerCase();
       v.loggedSub=todayLog.kind==='amrap'?'Twenty minutes with the '+todayLog.bell+' lb bell. Same bell, more rounds next time.':'No bell. Still showed up.';
     }
-    v.relog=()=>{const logs={...data.logs};delete logs[todayIso];this.save({...data,logs});if(todayLog.kind==='amrap'){this.setTimer({...t,status:'done',rounds:todayLog.rounds});this.setState({form:{...S.form,rounds:todayLog.rounds,bell:todayLog.bell}});}else this.setState({form:{...S.form,activity:todayLog.activity,minutes:todayLog.minutes}});};
+    v.relog=()=>{const logs={...data.logs};delete logs[todayIso];this.save({...data,logs,deleted:{...(data.deleted||{}),[todayIso]:Date.now()}});if(todayLog.kind==='amrap'){this.setTimer({...t,status:'done',rounds:todayLog.rounds});this.setState({form:{...S.form,rounds:todayLog.rounds,bell:todayLog.bell}});}else this.setState({form:{...S.form,activity:todayLog.activity,minutes:todayLog.minutes}});};
     v.showRest=sched.kind==='rest'&&!todayLog;
     v.restCopy=tKey==='sun'?"The days you're not training are most of your life. Get outside, get your steps, see the people you're doing this for.":"Three days a week for a year takes you further than five for six weeks. Get outside and get your steps.";
     v.showRecovery=sched.kind==='recovery'&&!todayLog;
@@ -1804,7 +1909,7 @@ class Component extends DCLogic {
     v.formMinutes=S.form.minutes;
     v.minutesDown=()=>this.setState({form:{...S.form,minutes:Math.max(5,S.form.minutes-5)}});
     v.minutesUp=()=>this.setState({form:{...S.form,minutes:S.form.minutes+5}});
-    v.saveRecovery=()=>{if(previewing){this.setState({form:{...S.form,activity:'Walk',minutes:30}});return;}const nd={...data,logs:{...data.logs,[todayIso]:{kind:'recovery',dayKey:tKey,activity:S.form.activity,minutes:S.form.minutes,title:sched.title}}};this.save(nd);this.buzz(60);const q=[{kind:'crossed',drawIso:todayIso,auto:1700}];if(this.weekCount(todayIso,nd)===(nd.mode===5?5:3))q.push({kind:'weekdone',drawIso:todayIso,auto:2000});if(dayNumber===30)q.push({kind:'day30',drawIso:todayIso});this.pushMoments(q);};
+    v.saveRecovery=()=>{if(previewing){this.setState({form:{...S.form,activity:'Walk',minutes:30}});return;}const nd={...data,logs:{...data.logs,[todayIso]:{kind:'recovery',dayKey:tKey,activity:S.form.activity,minutes:S.form.minutes,title:sched.title,at:Date.now()}}};this.save(nd);this.buzz(60);const q=[{kind:'crossed',drawIso:todayIso,auto:1700}];if(this.weekCount(todayIso,nd)===(nd.mode===5?5:3))q.push({kind:'weekdone',drawIso:todayIso,auto:2000});if(dayNumber===30)q.push({kind:'day30',drawIso:todayIso});this.pushMoments(q);};
 
     const isAmrap=sched.kind==='amrap'&&!todayLog;
     v.showIdle=isAmrap&&t.status==='idle';
@@ -1895,7 +2000,7 @@ class Component extends DCLogic {
     v.formBellDown=()=>this.setState({form:{...S.form,bell:Math.max(5,S.form.bell-5)}});
     v.formBellUp=()=>this.setState({form:{...S.form,bell:S.form.bell+5}});
     const afterLog=nd=>{const q=[{kind:'crossed',drawIso:todayIso,auto:1700}];const target=nd.mode===5?5:3;if(this.weekCount(todayIso,nd)===target)q.push({kind:'weekdone',drawIso:todayIso,auto:2000});if(dayNumber===30)q.push({kind:'day30',drawIso:todayIso});this.pushMoments(q);};
-    v.saveSession=()=>{if(previewing){this.resetClock();return;}const nd={...data,bell:S.form.bell,logs:{...data.logs,[todayIso]:{kind:'amrap',dayKey:tKey,rounds:S.form.rounds,bell:S.form.bell,title:sched.title,minutes:t.ranMinutes!=null?t.ranMinutes:this.minutes()}}};this.save(nd);this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});this.setState({warm:this.freshWarm()});this.buzz(80);afterLog(nd);};
+    v.saveSession=()=>{if(previewing){this.resetClock();return;}const nd={...data,bell:S.form.bell,logs:{...data.logs,[todayIso]:{kind:'amrap',dayKey:tKey,rounds:S.form.rounds,bell:S.form.bell,title:sched.title,minutes:t.ranMinutes!=null?t.ranMinutes:this.minutes(),at:Date.now()}}};this.save(nd);this.setTimer({status:'idle',endAt:0,remainingMs:0,rounds:0,splits:[]});this.setState({warm:this.freshWarm()});this.buzz(80);afterLog(nd);};
 
     // ---- progress ----
     const trainKeys=data.mode===5?['mon','tue','thu','fri','sat']:['mon','wed','fri'];
@@ -2006,7 +2111,7 @@ class Component extends DCLogic {
     const realTodayIso=this.iso(new Date());const hasToday=WI.some(w=>w.date===realTodayIso);
     v.wiSaveLabel=bwKnown==null?'Set your weight with − / +':hasToday?'Update today\'s weigh-in · '+bwKnown+' lb':'Log weigh-in · '+bwKnown+' lb';
     v.wiCountLabel=WI.length?WI.length+' logged':'none yet';
-    v.logWeighIn=()=>{if(bwKnown==null)return;const list=WI.filter(w=>w.date!==realTodayIso).concat([{date:realTodayIso,lb:bwDraft}]);this.save({...data,weighIns:list});this.buzz(30);};
+    v.logWeighIn=()=>{if(bwKnown==null)return;const list=WI.filter(w=>w.date!==realTodayIso).concat([{date:realTodayIso,lb:bwDraft,at:Date.now()}]);this.save({...data,weighIns:list});this.buzz(30);};
     v.hasWeighIns=WI.length>0;
     v.weighIns=WI.slice().reverse().map(w=>({date:this.parseIso(w.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'2-digit'}),lb:w.lb,
       up:()=>this.save({...data,weighIns:WI.map(x=>x.date===w.date?{...x,lb:x.lb+1}:x)}),down:()=>this.save({...data,weighIns:WI.map(x=>x.date===w.date?{...x,lb:Math.max(60,x.lb-1)}:x)}),remove:()=>this.save({...data,weighIns:WI.filter(x=>x.date!==w.date)})}));
@@ -2052,6 +2157,16 @@ class Component extends DCLogic {
     v.freshDisabled=!freshOk;v.freshBtnBg=freshOk?FLUO:'rgba(28,39,51,.12)';v.freshBtnColor=freshOk?INK:'rgba(28,39,51,.4)';
     v.doFresh=()=>{if(freshOk)this.startFresh();};v.freshCancel=()=>this.setState({freshArmed:false,freshWord:''});
     v.testNote=S.testNote||'';
+    const sc=S.sync||this.syncCfg();
+    v.syncOn=!!sc;v.syncOff=!sc;v.syncMsg=S.syncMsg||'';
+    v.syncToken=S.syncToken||'';v.onSyncToken=e=>this.setState({syncToken:e.target.value});
+    v.doConnect=()=>this.connectSync(S.syncToken);
+    v.syncWhen=S.syncAt?'synced '+new Date(S.syncAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):'not synced yet';
+    v.syncNowLabel=S.syncBusy?'Syncing…':'Sync now';
+    v.doSyncNow=()=>this.syncNow(true);
+    v.doDisconnect=()=>{this.setSyncCfg(null);this.setState({syncMsg:'',pairShown:false});};
+    v.pairShown=!!S.pairShown;v.pairUrl=S.pairShown?this.pairLink():'';
+    v.doPair=()=>{const u=this.pairLink();this.setState({pairShown:true});try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(e){}};
     v.previewDays=[['auto','Today'],['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']].map(([k,label])=>{const on=(S.previewDay||'auto')===k;return{label,pick:()=>this.setPreviewDay(k),bg:on?INK:'transparent',color:on?PAPER:INK};});
     v.resetClock=()=>this.resetClock();
     return v;
