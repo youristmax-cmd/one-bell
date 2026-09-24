@@ -31,6 +31,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;o
 @keyframes ob-print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes ob-fadein{from{opacity:0}to{opacity:1}}
 @keyframes ob-scrub{to{opacity:.25}}
+@keyframes ob-pulse{0%,100%{box-shadow:0 0 0 1px rgba(255,74,28,.55),0 0 18px rgba(255,74,28,.35)}50%{box-shadow:0 0 0 1px rgba(255,74,28,.9),0 0 30px rgba(255,74,28,.75)}}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* landscape column wrappers are invisible in portrait */
 .ob-span2,.ob-span3,.ob-span4{display:contents}
@@ -103,7 +104,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;align-content:start;
     padding:14px max(20px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))!important}
   .ob-cue>*{grid-column:1}
-  .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 8;margin-top:0!important;align-self:start}
+  .ob-cue>.ob-cue-player{grid-column:2;grid-row:1 / span 10;margin-top:0!important;align-self:start}
+  .ob-cue-text{margin-top:10px!important;font-size:16px!important;line-height:1.35!important}
+  .ob-cue>.ob-mini{grid-column:1;padding:6px 10px!important;margin-top:10px!important;gap:10px}
+  .ob-cue .ob-mini span:first-child{font-size:20px!important}
+  .ob-cue .ob-mini button{min-height:42px!important;padding:0 10px!important}
+  .ob-cue-nav button{min-height:46px!important}
+  .ob-cue-auto button{min-height:38px!important}
+  .ob-cue-auto > div button{width:38px!important;height:38px!important}
+  .ob-cue > div:last-of-type button{min-height:48px!important}
   .ob-cue-frame{--h:calc(100dvh - 28px - env(safe-area-inset-bottom));height:var(--h)!important;max-width:min(62vw,100%)!important}
   .ob-cue-frame[data-v="1"]{width:calc(var(--h) * 9 / 16)!important}
   .ob-cue-frame[data-v="0"]{width:min(62vw, calc(var(--h) * 16 / 9))!important}
@@ -136,6 +145,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .ob-warmcol .ob-wstart{font-size:19px!important}
   /* fixed bars centred on the page instead of full-bleed (no transform: it moves video layers on iOS) */
   .ob-nav,.ob-sess,.ob-cue{padding-left:max(18px, calc((100vw - 1180px) / 2))!important;padding-right:max(18px, calc((100vw - 1180px) / 2))!important}
+  .ob-sheet{max-width:560px!important}
   .ob-nav button{min-height:58px!important;gap:4px!important}
   .ob-nav button > span:last-child{height:5px!important;width:34px!important}
   .ob-sess{padding-top:10px!important;padding-bottom:8px!important;column-gap:32px}
@@ -184,7 +194,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div style="text-align:center;font:700 12px/1 Archivo;font-stretch:110%;padding:7px 0;border-right:2px solid #1c2733;border-bottom:2px solid #1c2733;background:#1c2733;color:#ece6d6">{{ w }}</div>
     </sc-for>
     <sc-for list="{{ calendar }}" as="c" hint-placeholder-count="35">
-      <div class="ob-calcell" style="aspect-ratio:1;position:relative;border-right:1px solid #1c2733;border-bottom:1px solid #1c2733;background: {{ c.bg }}">
+      <button class="ob-calcell" onClick="{{ c.tap }}" disabled="{{ c.locked }}" style="aspect-ratio:1;position:relative;border:0;border-right:1px solid #1c2733;border-bottom:1px solid #1c2733;padding:0;font:inherit;color:inherit;text-align:left;background: {{ c.bg }}">
         <span style="position:absolute;left:5px;top:4px;font:600 12px Archivo;color: {{ c.color }}">{{ c.label }}</span>
         <sc-if value="{{ c.rest }}" hint-placeholder-val="{{ false }}">
           <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:400 11px Archivo;color:rgba(28,39,51,.4);font-style:italic">rest</span>
@@ -193,11 +203,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
           <span style="position:absolute;left:12%;top:50%;width:76%;height:5px;border-radius:3px;background:#ff4a1c;transform:translateY(-50%) rotate({{ c.rotA }}deg)"></span>
           <span style="position:absolute;left:12%;top:50%;width:76%;height:5px;border-radius:3px;background:#ff4a1c;transform:translateY(-50%) rotate({{ c.rotB }}deg);opacity:.9"></span>
         </sc-if>
-      </div>
+      </button>
     </sc-for>
   </div>
   </div>
-  <div style="margin-top:10px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Cross off every day you show up. Track rounds, not weight.</div>
+  <div style="margin-top:10px;font:400 13px/1.4 Archivo;font-style:italic;color:rgba(28,39,51,.7)">Cross off every day you show up. Track rounds, not weight. Tap any day up to today to log it or fix it.</div>
+  <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font:700 12px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em;opacity:.75">Log a past day</span>
+    <input type="date" value="{{ pickIso }}" max="{{ pickMax }}" onChange="{{ onPickDay }}" style="min-height:44px;padding:0 10px;background:#f7f2e4;border:2px solid #1c2733;color:#1c2733;font:600 15px Archivo">
+  </div>
 
   <sc-if value="{{ hasArchive }}" hint-placeholder-val="{{ false }}">
     <div style="margin-top:26px;border-bottom:2px solid #1c2733;padding-bottom:5px;font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.04em">Filed</div>
@@ -835,7 +849,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <div style="font:400 32px/1 'Archivo Black',Archivo,sans-serif;text-transform:uppercase;letter-spacing:-.01em">{{ cueName }}</div>
       <div style="font:400 24px 'Archivo Black',Archivo,sans-serif;color:#ff4a1c;white-space:nowrap">{{ cueReps }}</div>
     </div>
-    <div style="margin-top:14px;font:400 20px/1.4 Archivo;text-wrap:pretty">{{ cueText }}</div>
+    <div class="ob-cue-text" style="margin-top:14px;font:400 20px/1.4 Archivo;text-wrap:pretty">{{ cueText }}</div>
     <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ false }}">
       <div class="ob-cue-player" style="margin-top:16px;display:flex;justify-content:center"><div class="ob-cue-frame" data-v="{{ cueV }}" style="overflow:hidden;background:#1c2733;border:2px solid #1c2733;max-width:100%;aspect-ratio: {{ cueAR }};width: {{ cueW }};height: {{ cueH }}">
         {{ cuePlayer }}
@@ -873,6 +887,74 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
         <button onClick="{{ openPlayer }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;border:0;background:#1c2733;color:#ece6d6;font:700 19px Archivo;font-stretch:115%;text-transform:uppercase">Watch here<span style="font:700 10px Archivo;padding:2px 5px;border:1.5px solid #ff4a1c;color:#ff4a1c">{{ cueBadge }}</span></button>
       </sc-if>
       <button onClick="{{ closeCue }}" style="flex: {{ closeFlex }};min-height:60px;padding:0 20px;background:transparent;color:#1c2733;border:2px solid #1c2733;font:600 16px Archivo">Back to the workout</button>
+    </div>
+    <sc-if value="{{ showMini }}" hint-placeholder-val="{{ false }}">
+      <div class="ob-mini" style="margin-top:14px;position:sticky;bottom:0;z-index:2;background:#0d1117;border:1px solid rgba(255,74,28,.55);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:12px;animation: {{ miniAnim }};box-shadow:0 0 0 1px rgba(255,74,28,.5),0 0 18px rgba(255,74,28,.3)">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:700 26px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;color: {{ miniColor }};text-shadow:0 0 12px {{ miniGlow }};font-variant-numeric:tabular-nums">{{ miniClock }}</span>
+            <span style="font:700 10px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.22em;color:rgba(242,238,229,.6)">{{ miniLabel }}</span>
+          </div>
+          <div style="margin-top:8px;height:3px;background:rgba(242,238,229,.16);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width: {{ miniPct }};background: {{ miniColor }};box-shadow:0 0 10px {{ miniGlow }}"></div>
+          </div>
+        </div>
+        <button onClick="{{ miniRound }}" disabled="{{ miniPaused }}" style="flex-shrink:0;min-height:52px;padding:0 14px;background:transparent;border:1px solid rgba(255,74,28,.7);border-radius:8px;color:#ff4a1c;font:700 11px Archivo;font-stretch:110%;text-transform:uppercase;letter-spacing:.14em;line-height:1.2">
+          Round<br><span style="font:700 18px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#f2eee5">{{ miniRounds }}</span>
+        </button>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<!-- ================= LOG ANY DAY ================= -->
+<sc-if value="{{ showEdit }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEdit }}" style="position:fixed;inset:0;background:rgba(28,39,51,.55);z-index:53"></div>
+  <div class="ob-sheet" style="position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;max-height:100dvh;overflow-y:auto;z-index:54;background:#ece6d6;color:#1c2733;border-top:4px solid #1c2733;padding:18px 20px calc(24px + env(safe-area-inset-bottom))">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+      <div style="font:400 26px/1 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">{{ editDate }}</div>
+      <div style="font:700 13px Archivo;font-stretch:110%;text-transform:uppercase;color:#ff4a1c;white-space:nowrap">{{ editTitle }}</div>
+    </div>
+    <div style="margin-top:8px;font:400 15px/1.4 Archivo;font-style:italic;opacity:.8">{{ editHint }}</div>
+    <sc-if value="{{ editAmrap }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font:600 14px Archivo">Rounds</div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+            <button onClick="{{ editRoundsDown }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">−</button>
+            <div style="flex:1;text-align:center;font:400 44px/1 'Archivo Black',Archivo,sans-serif;font-variant-numeric:tabular-nums">{{ editRounds }}</div>
+            <button onClick="{{ editRoundsUp }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">+</button>
+          </div>
+        </div>
+        <div>
+          <div style="font:600 14px Archivo">Bell (lb)</div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+            <button onClick="{{ editBellDown }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">−</button>
+            <div style="flex:1;text-align:center;font:400 44px/1 'Archivo Black',Archivo,sans-serif;font-variant-numeric:tabular-nums">{{ editBell }}</div>
+            <button onClick="{{ editBellUp }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">+</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ editRecovery }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ editActs }}" as="a" hint-placeholder-count="6">
+          <button onClick="{{ a.pick }}" style="min-height:44px;padding:0 14px;font:600 15px Archivo;border:2px solid #1c2733;background: {{ a.bg }};color: {{ a.color }}">{{ a.label }}</button>
+        </sc-for>
+      </div>
+      <div style="margin-top:14px;font:600 14px Archivo">Minutes</div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
+        <button onClick="{{ editMinDown }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">−</button>
+        <div style="flex:1;text-align:center;font:400 44px/1 'Archivo Black',Archivo,sans-serif;font-variant-numeric:tabular-nums">{{ editMinutes }}</div>
+        <button onClick="{{ editMinUp }}" style="width:48px;height:56px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:400 22px 'Archivo Black',Archivo,sans-serif">+</button>
+      </div>
+    </sc-if>
+    <div style="margin-top:18px;display:flex;gap:10px">
+      <button onClick="{{ saveEdit }}" style="flex:1;min-height:60px;background:#ff4a1c;color:#1c2733;border:0;font:400 20px 'Archivo Black',Archivo,sans-serif;text-transform:uppercase">{{ editSaveLabel }}</button>
+      <sc-if value="{{ editHasLog }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ removeEdit }}" style="min-height:60px;padding:0 16px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:600 15px Archivo">Remove</button>
+      </sc-if>
+      <button onClick="{{ closeEdit }}" style="min-height:60px;padding:0 16px;background:transparent;border:2px solid #1c2733;color:#1c2733;font:600 15px Archivo">Close</button>
     </div>
   </div>
 </sc-if>
@@ -1225,6 +1307,32 @@ class Component extends DCLogic {
   }
   warmPh=this.phRef('warm');
   cuePh=this.phRef('cue');
+  // log or fix any past day from the calendar
+  openEdit(iso){
+    const d=this.state.data||{},l=(d.logs||{})[iso];
+    const k=this.dayKey(this.parseIso(iso)),sc=this.schedule(k,d);
+    this.setState({editIso:iso,editForm:{
+      rounds:l&&l.kind==='amrap'?l.rounds:0,
+      bell:(l&&l.bell)||d.bell||30,
+      minutes:l&&l.kind==='recovery'?l.minutes:30,
+      activity:(l&&l.activity)||'Walk',
+      kind:l?l.kind:(sc.kind==='recovery'?'recovery':'amrap')}});
+  }
+  saveEdit(){
+    const iso=this.state.editIso,f=this.state.editForm,d=this.state.data;
+    if(!iso||!f)return;
+    const k=this.dayKey(this.parseIso(iso)),sc=this.schedule(k,d);
+    const log=f.kind==='recovery'
+      ?{kind:'recovery',dayKey:k,activity:f.activity,minutes:f.minutes,title:sc.title}
+      :{kind:'amrap',dayKey:k,rounds:f.rounds,bell:f.bell,title:sc.title,minutes:this.minutes()};
+    this.save({...d,logs:{...d.logs,[iso]:log}});
+    this.buzz(60);this.setState({editIso:null,editForm:null});
+  }
+  removeEdit(){
+    const iso=this.state.editIso,d=this.state.data;if(!iso)return;
+    const logs={...d.logs};delete logs[iso];
+    this.save({...d,logs});this.buzz(30);this.setState({editIso:null,editForm:null});
+  }
   // step to another movement on the video page (wraps around the day's list)
   cueGo(delta){
     const moves=this._moves||[];if(!moves.length||this.state.cue==null)return;
@@ -1623,6 +1731,28 @@ class Component extends DCLogic {
     const drawIso=M&&M.drawIso;
     cal.forEach(c=>{c.draw=!!drawIso&&c.iso===drawIso;c.doneStatic=c.done&&!c.draw;});
     v.calendar=cal;v.showedUp=showedUp;
+    // any day up to today can be logged or fixed from the calendar
+    cal.forEach(c=>{const can=!!c.iso&&c.iso<=todayIso;c.locked=!can;c.tap=can?(()=>this.openEdit(c.iso)):null;});
+    const eIso=S.editIso;v.showEdit=!!eIso;
+    if(eIso){
+      const f=S.editForm||{},eKey=this.dayKey(this.parseIso(eIso)),eSched=this.schedule(eKey,data),eLog=(data.logs||{})[eIso];
+      const setF=o=>this.setState({editForm:{...f,...o}});
+      v.editDate=this.parseIso(eIso).toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+      v.editTitle=eSched.title;v.editHasLog=!!eLog;
+      v.editAmrap=f.kind!=='recovery';v.editRecovery=f.kind==='recovery';
+      v.editHint=eIso===todayIso?'Today. Logging here is the same as crossing it off.':eLog?'Already logged. Change it or remove it.':'Not logged yet. Add what you did.';
+      v.editRounds=f.rounds||0;v.editBell=f.bell||data.bell;v.editMinutes=f.minutes||30;
+      v.editRoundsDown=()=>setF({rounds:Math.max(0,(f.rounds||0)-1)});v.editRoundsUp=()=>setF({rounds:(f.rounds||0)+1});
+      v.editBellDown=()=>setF({bell:Math.max(5,(f.bell||data.bell)-5)});v.editBellUp=()=>setF({bell:(f.bell||data.bell)+5});
+      v.editMinDown=()=>setF({minutes:Math.max(5,(f.minutes||30)-5)});v.editMinUp=()=>setF({minutes:(f.minutes||30)+5});
+      v.editActs=Component.ACTIVITIES.map(a=>({label:a,pick:()=>setF({activity:a}),bg:f.activity===a?INK:'transparent',color:f.activity===a?PAPER:INK}));
+      v.editSaveLabel=eLog?'Update':'Cross it off';
+      v.saveEdit=()=>this.saveEdit();v.removeEdit=()=>this.removeEdit();
+    }
+    v.closeEdit=()=>this.setState({editIso:null,editForm:null});
+    // a day earlier than the grid (or before you started) can still be logged
+    v.pickIso=S.pickIso||'';v.pickMax=todayIso;
+    v.onPickDay=e=>{const iso=e.target.value;if(!iso)return;this.setState({pickIso:iso});this.openEdit(iso);};
     if(M){
       const k=M.kind,dayLong=L[M.dayKey||tKey];
       v.mTitle={round:'Round complete.',undo:'Undo.',lastmin:'Last minute.',crossed:'Crossed off.',weekdone:'Week complete.',day30:'Day 30.',called:'Called it.',time:''}[k]||'';
@@ -1816,6 +1946,19 @@ class Component extends DCLogic {
       v.cueSourceName=vid.source==='instagram'?'Instagram':'YouTube';
     }
     v.closeCue=()=>this.setState({cue:null,player:false,ytMuted:S.ytMuted==='cue'?null:S.ytMuted});
+    // small clock on the video page, so the session is readable without closing the video
+    const miniLive=t.status==='running'||t.status==='paused';
+    v.showMini=miniLive;
+    if(miniLive){
+      const mRemain=t.status==='paused'?t.remainingMs:t.endAt-S.now;
+      const mLast=mRemain<=60000&&t.status==='running';
+      v.miniClock=this.fmt(mRemain);v.miniRounds=t.rounds;v.miniPaused=t.status==='paused';
+      v.miniLabel=t.status==='paused'?'paused':mLast?'last minute':'left';
+      v.miniColor=mLast?'#ff4a1c':'#f2eee5';v.miniGlow=mLast?'rgba(255,74,28,.85)':'rgba(242,238,229,.35)';
+      v.miniPct=(Math.max(0,Math.min(1,mRemain/(this.minutes()*60000)))*100).toFixed(1)+'%';
+      v.miniAnim=mLast?'ob-pulse 1.1s ease-in-out infinite':'none';
+      v.miniRound=()=>{if(t.status!=='running')return;const el=this.minutes()*60000-(t.endAt-Date.now());this.sfx('round');this.buzz([40,30,60]);this.setTimer({...t,rounds:t.rounds+1,splits:[...(t.splits||[]),el]});};
+    }
     // ---- video page: step through the movements, on a timer or by hand ----
     this._moves=moves;
     const autoSec=data.autoSec||120,autoOn=data.autoNext!==false;
